@@ -9,6 +9,9 @@ Wiki/
 # Private security records
 Private_Security_Records/
 
+# Internal security status report
+SECURITY_STATUS_REPORT.md
+
 # Cache files
 __pycache__/
 .pytest_cache/

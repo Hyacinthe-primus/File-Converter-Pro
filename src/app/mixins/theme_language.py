@@ -54,6 +54,26 @@ class ThemeLanguageMixin:
                 return decorate_language_name(lang["name"])
         return decorate_language_name(code)
 
+    def apply_language(self, new_language: str) -> None:
+        """Apply a language consistently to menus, toolbar, widgets and notifications."""
+        available = [lang["code"] for lang in self.translation_manager.get_available_languages()]
+        if available and new_language not in available:
+            return
+
+        self.current_language = new_language
+        self.translation_manager.set_language(new_language)
+        if hasattr(self, "system_notifier"):
+            self.system_notifier.set_language(new_language)
+        if hasattr(self, "files_list_widget"):
+            self.files_list_widget.set_language(new_language)
+
+        self.config["language"] = new_language
+        self.config_manager.save_config(self.config)
+        self.create_menu_bar()
+        self.update_texts()
+        if hasattr(self, "language_action"):
+            self.language_action.setText(self._get_language_label(new_language))
+
     def toggle_language(self):
         available = [lang["code"] for lang in self.translation_manager.get_available_languages()]
         if not available:
@@ -62,21 +82,7 @@ class ThemeLanguageMixin:
             idx = available.index(self.current_language)
         except ValueError:
             idx = 0
-        new_language = available[(idx + 1) % len(available)]
-
-        self.current_language = new_language
-        self.translation_manager.set_language(new_language)
-        self.system_notifier.set_language(new_language)
-        if hasattr(self, "files_list_widget"):
-            self.files_list_widget.set_language(new_language)
-
-        self.config["language"] = new_language
-        self.config_manager.save_config(self.config)
-        self.create_menu_bar()
-
-        self.update_texts()
-
-        self.language_action.setText(self._get_language_label(new_language))
+        self.apply_language(available[(idx + 1) % len(available)])
 
     def update_texts(self):
         self.setWindowTitle("File Converter Pro - Professional File Converter")

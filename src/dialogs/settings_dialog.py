@@ -549,25 +549,8 @@ class SettingsDialog(TranslationMixin, QDialog):
     def _apply_language(self, code: str) -> None:
         """Switch the application language and refresh the card list."""
         parent_app = self.parent()
-        if hasattr(parent_app, "translation_manager"):
-            parent_app.translation_manager.set_language(code)
-        if hasattr(parent_app, "current_language"):
-            parent_app.current_language = code
-        if hasattr(parent_app, "config"):
-            parent_app.config["language"] = code
-        if hasattr(parent_app, "config_manager"):
-            parent_app.config_manager.save_config(parent_app.config)
-        if hasattr(parent_app, "update_texts"):
-            parent_app.update_texts()
-        # Update language toolbar button text if present
-        if hasattr(parent_app, "language_action"):
-            available = [lang["code"] for lang in parent_app.translation_manager.get_available_languages()]
-            try:
-                idx = available.index(code)
-                next_code = available[(idx + 1) % len(available)]
-            except ValueError:
-                next_code = code
-            parent_app.language_action.setText(parent_app._get_language_label(next_code))
+        if parent_app is not None and hasattr(parent_app, "apply_language"):
+            parent_app.apply_language(code)
         self._refresh_lang_list()
 
     def _remove_language(self, code: str, name: str) -> None:

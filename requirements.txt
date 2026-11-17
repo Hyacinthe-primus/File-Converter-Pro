@@ -17,7 +17,7 @@ pikepdf==10.11.0
 reportlab==4.4.4
 
 # OCR (searchable PDF text layer)
-scanlayer==1.1.0
+scanlayer==1.2.0
 
 # Office docs Libraries
 python-docx==1.2.0

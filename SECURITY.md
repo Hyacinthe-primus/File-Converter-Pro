@@ -9,9 +9,9 @@ Only the latest release of File Converter Pro is supported with security updates
 | 1.0.8+  | Yes       |
 | < 1.0.8 | No        |
 
-At the time of writing, **v1.0.8 is the upcoming release**. The security
-fixes linked below are included in the 1.0.8 release and later; they are not
-included in the tagged v1.0.7 build.
+At the time of writing, **v1.0.8 is the current release**. Patches 1 and 2
+are included in v1.0.8 and later. Patches 3 and 4 are in the unreleased
+development line after v1.0.8.
 
 ## Recent Security Fixes
 
@@ -19,6 +19,8 @@ Detailed patch notes are kept in the [`security_patches`](security_patches/) fol
 
 - [Patch 1: HTML-to-PDF local resource handling](security_patches/patch1.md)
 - [Patch 2: Notification PowerShell handling](security_patches/patch2.md)
+- [Patch 3: External binary configuration search](security_patches/patch3.md)
+- [Patch 4: ImageMagick argument and executable resolution](security_patches/patch4.md)
 
 ## Reporting a Vulnerability
 

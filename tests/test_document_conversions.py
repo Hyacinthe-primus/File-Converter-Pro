@@ -61,6 +61,18 @@ def test_csv_to_json(tmp_path):
     assert data[1]["age"] == "25"
 
 
+def test_csv_to_json_excel_encodings(tmp_path):
+    for name, raw in [
+        ("utf8_bom.csv", "\ufeffName,City\r\nJosé,München\r\n".encode("utf-8")),
+        ("ansi.csv", "Name,City\r\nJosé,München\r\n".encode("cp1252")),
+    ]:
+        src = tmp_path / name
+        src.write_bytes(raw)
+        dst = tmp_path / f"{name}.json"
+        assert _engine()._csv_to_json(str(src), str(dst)) is True
+        assert json.loads(dst.read_text(encoding="utf-8")) == [{"Name": "José", "City": "München"}]
+
+
 def test_json_to_csv(tmp_path):
     src = tmp_path / "test.json"
     src.write_text(json.dumps([{"a": 1, "b": 2}, {"a": 3, "b": 4}]), encoding="utf-8")

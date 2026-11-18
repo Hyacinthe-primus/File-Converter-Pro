@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import re
 import subprocess
@@ -394,9 +395,16 @@ class DocumentConverters:
 
     def _csv_to_json(self, src: str, dst: str) -> bool:
         try:
-            with open(src, "r", encoding="utf-8", errors="replace", newline="") as f:
-                reader = csv.DictReader(f)
-                data = list(reader)
+            with open(src, "rb") as f:
+                raw = f.read()
+            # Excel writes "CSV UTF-8" with a BOM and plain "CSV" in the ANSI code page.
+            for enc in ("utf-8-sig", "cp1252", "latin-1"):
+                try:
+                    text = raw.decode(enc)
+                    break
+                except UnicodeDecodeError:
+                    pass
+            data = list(csv.DictReader(io.StringIO(text, newline="")))
             with open(dst, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             return True

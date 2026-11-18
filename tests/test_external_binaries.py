@@ -65,6 +65,46 @@ def test_config_file_exists_in_repo():
     assert os.path.isfile(path)
 
 
+def test_cwd_config_is_not_a_candidate(monkeypatch, tmp_path):
+    """A config file under the working directory must not be discovered."""
+    monkeypatch.delenv("FCP_EXTERNAL_BINARIES_CONF", raising=False)
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(eb, "SRC_DIR", str(tmp_path / "src_without_config"))
+
+    fake = _make_file(tmp_path / "tools" / "ffmpeg.exe")
+    conf_dir = tmp_path / "config"
+    conf_dir.mkdir()
+    (conf_dir / "external_binaries.conf").write_text(
+        f"[binaries]\nffmpeg = {fake}\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(eb, "shutil", _FakeWhich({}))
+    monkeypatch.setattr(eb, "glob", _FakeGlob({}))
+    eb._reset_cache()
+
+    assert eb.get_config_path() is None
+    assert eb.load_config() == {}
+    assert eb.get_configured_binary("ffmpeg") is None
+    assert eb.resolve_binary("ffmpeg") is None
+
+
+def test_src_config_still_used_without_override(monkeypatch, tmp_path):
+    """The development SRC_DIR config remains a legitimate candidate."""
+    monkeypatch.delenv("FCP_EXTERNAL_BINARIES_CONF", raising=False)
+    src_dir = tmp_path / "src"
+    conf_dir = src_dir / "config"
+    conf_dir.mkdir(parents=True)
+    fake = _make_file(tmp_path / "tools" / "ffmpeg.exe")
+    conf = conf_dir / "external_binaries.conf"
+    conf.write_text(f"[binaries]\nffmpeg = {fake}\n", encoding="utf-8")
+    monkeypatch.setattr(eb, "SRC_DIR", str(src_dir))
+    eb._reset_cache()
+
+    assert _norm(eb.get_config_path()) == _norm(conf)
+    assert eb.get_configured_binary("ffmpeg") == str(fake)
+
+
 def test_empty_values_return_none():
     """Empty config values must keep automatic detection (return None)."""
     assert eb.get_config_path() is not None
@@ -279,3 +319,113 @@ def test_directory_defaults_used_when_config_empty(monkeypatch, tmp_path):
     eb._reset_cache()
 
     assert [_norm(path) for path in eb.resolve_directories("weasyprint_dll")] == [_norm(default_dir)]
+
+
+def test_imagemagick_spec_is_platform_specific():
+    """Windows must never list generic convert; POSIX IM6 keeps it."""
+    windows = eb._imagemagick_tool_spec("nt")
+    posix = eb._imagemagick_tool_spec("posix")
+
+    assert windows.names == ("magick",)
+    assert posix.names == ("magick", "convert")
+    assert all("convert" not in pattern.lower() for pattern in windows.system)
+    assert any("convert" in pattern.lower() for pattern in posix.system)
+
+
+def test_windows_imagemagick_ignores_system_convert(monkeypatch):
+    """Windows convert.exe must not be auto-resolved as ImageMagick."""
+    monkeypatch.setitem(eb.TOOLS, "imagemagick", eb._imagemagick_tool_spec("nt"))
+    monkeypatch.setattr(
+        eb,
+        "shutil",
+        _FakeWhich({"convert": r"C:\Windows\System32\convert.exe"}),
+    )
+    monkeypatch.setattr(eb, "glob", _FakeGlob({}))
+
+    assert eb.resolve_binary("imagemagick") is None
+    assert eb.locate_binary("imagemagick") == (None, None)
+
+
+def test_windows_imagemagick_prefers_magick_on_path(monkeypatch):
+    """If both exist on PATH, magick wins over Windows convert.exe."""
+    magick = r"C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe"
+    monkeypatch.setitem(eb.TOOLS, "imagemagick", eb._imagemagick_tool_spec("nt"))
+    monkeypatch.setattr(
+        eb,
+        "shutil",
+        _FakeWhich(
+            {
+                "magick": magick,
+                "convert": r"C:\Windows\System32\convert.exe",
+            }
+        ),
+    )
+    monkeypatch.setattr(eb, "glob", _FakeGlob({}))
+
+    assert eb.resolve_binary("imagemagick") == magick
+    assert eb.locate_binary("imagemagick")[1] == "system PATH"
+
+
+def test_windows_imagemagick_common_dir_beats_system_convert(monkeypatch, tmp_path):
+    """A common-dir ImageMagick 7 wins over PATH convert.exe on Windows."""
+    spec = eb._imagemagick_tool_spec("nt")
+    magick = _make_file(tmp_path / "ImageMagick-7.1.2" / "magick.exe")
+    pattern = eb._expand_template(spec.system[0], None)
+    monkeypatch.setitem(eb.TOOLS, "imagemagick", spec)
+    monkeypatch.setattr(
+        eb,
+        "shutil",
+        _FakeWhich({"convert": r"C:\Windows\System32\convert.exe"}),
+    )
+    monkeypatch.setattr(eb, "glob", _FakeGlob({pattern: [magick]}))
+
+    assert _norm(eb.resolve_binary("imagemagick")) == _norm(magick)
+    assert eb.locate_binary("imagemagick")[1] == "common dirs"
+
+
+def test_windows_imagemagick_explicit_config_survives_system_convert(monkeypatch, tmp_path):
+    """Explicit Windows ImageMagick config is used when magick is absent."""
+    configured = _make_file(tmp_path / "tools" / "imagemagick.exe")
+    conf = tmp_path / "external_binaries.conf"
+    conf.write_text(f"[binaries]\nimagemagick = {configured}\n", encoding="utf-8")
+    monkeypatch.setenv("FCP_EXTERNAL_BINARIES_CONF", str(conf))
+    monkeypatch.setitem(eb.TOOLS, "imagemagick", eb._imagemagick_tool_spec("nt"))
+    monkeypatch.setattr(
+        eb,
+        "shutil",
+        _FakeWhich({"convert": r"C:\Windows\System32\convert.exe"}),
+    )
+    monkeypatch.setattr(eb, "glob", _FakeGlob({}))
+    eb._reset_cache()
+
+    assert _norm(eb.resolve_binary("imagemagick")) == _norm(configured)
+    assert eb.locate_binary("imagemagick")[1] == "config file"
+
+
+def test_posix_imagemagick_im6_convert_still_resolves(monkeypatch):
+    """POSIX ImageMagick 6 convert remains a valid fallback."""
+    monkeypatch.setitem(eb.TOOLS, "imagemagick", eb._imagemagick_tool_spec("posix"))
+    monkeypatch.setattr(eb, "shutil", _FakeWhich({"convert": "/usr/bin/convert"}))
+    monkeypatch.setattr(eb, "glob", _FakeGlob({}))
+
+    assert eb.resolve_binary("imagemagick") == "/usr/bin/convert"
+    assert eb.locate_binary("imagemagick")[1] == "system PATH"
+
+
+def test_posix_imagemagick_prefers_magick(monkeypatch):
+    """POSIX keeps magick ahead of ImageMagick 6 convert."""
+    monkeypatch.setitem(eb.TOOLS, "imagemagick", eb._imagemagick_tool_spec("posix"))
+    monkeypatch.setattr(
+        eb,
+        "shutil",
+        _FakeWhich(
+            {
+                "magick": "/usr/bin/magick",
+                "convert": "/usr/bin/convert",
+            }
+        ),
+    )
+    monkeypatch.setattr(eb, "glob", _FakeGlob({}))
+
+    assert eb.resolve_binary("imagemagick") == "/usr/bin/magick"
+    assert eb.locate_binary("imagemagick")[1] == "system PATH"

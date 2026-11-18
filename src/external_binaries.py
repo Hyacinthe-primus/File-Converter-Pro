@@ -60,6 +60,35 @@ class ToolSpec:
     system: tuple[str, ...] = ()
 
 
+_WINDOWS_IMAGEMAGICK_SYSTEM = (
+    r"%LOCALAPPDATA%\ImageMagick-*\magick.exe",
+    r"%PROGRAMFILES%\ImageMagick-*\magick.exe",
+    r"C:\Program Files\ImageMagick-*\magick.exe",
+    r"C:\Program Files (x86)\ImageMagick-*\magick.exe",
+)
+_POSIX_IMAGEMAGICK_SYSTEM = (
+    "/usr/bin/magick",
+    "/usr/bin/convert",
+    "/usr/local/bin/magick",
+    "/usr/local/bin/convert",
+    "/opt/homebrew/bin/magick",
+    "/opt/homebrew/bin/convert",
+    "/opt/local/bin/magick",
+    "/opt/local/bin/convert",
+    "/snap/bin/magick",
+)
+
+
+def _imagemagick_tool_spec(platform_name: str | None = None) -> ToolSpec:
+    """Build the ImageMagick spec without treating Windows convert.exe as IM."""
+    if (platform_name or os.name) == "nt":
+        return ToolSpec(names=("magick",), system=_WINDOWS_IMAGEMAGICK_SYSTEM)
+    return ToolSpec(
+        names=("magick", "convert"),
+        system=_POSIX_IMAGEMAGICK_SYSTEM,
+    )
+
+
 TOOLS: dict[str, ToolSpec] = {
     "7z": ToolSpec(
         names=("7z", "7zz", "7za"),
@@ -142,24 +171,7 @@ TOOLS: dict[str, ToolSpec] = {
             "/snap/bin/gs",
         ),
     ),
-    "imagemagick": ToolSpec(
-        names=("magick", "convert"),
-        system=(
-            r"%LOCALAPPDATA%\ImageMagick-*\magick.exe",
-            r"%PROGRAMFILES%\ImageMagick-*\magick.exe",
-            r"C:\Program Files\ImageMagick-*\magick.exe",
-            r"C:\Program Files (x86)\ImageMagick-*\magick.exe",
-            "/usr/bin/magick",
-            "/usr/bin/convert",
-            "/usr/local/bin/magick",
-            "/usr/local/bin/convert",
-            "/opt/homebrew/bin/magick",
-            "/opt/homebrew/bin/convert",
-            "/opt/local/bin/magick",
-            "/opt/local/bin/convert",
-            "/snap/bin/magick",
-        ),
-    ),
+    "imagemagick": _imagemagick_tool_spec(),
     "libreoffice": ToolSpec(
         names=("soffice", "libreoffice"),
         app_local=("{app_dir}/libreoffice/program/soffice.exe",),
@@ -262,7 +274,6 @@ def _config_candidates() -> list[str]:
         candidates.append(os.path.join(exe_dir, CONFIG_FOLDER, CONFIG_FILE))
         candidates.append(os.path.join(exe_dir, "_internal", CONFIG_FOLDER, CONFIG_FILE))
     candidates.append(os.path.join(str(SRC_DIR), CONFIG_FOLDER, CONFIG_FILE))
-    candidates.append(os.path.join(os.getcwd(), CONFIG_FOLDER, CONFIG_FILE))
     return candidates
 
 

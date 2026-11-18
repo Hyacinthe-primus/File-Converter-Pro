@@ -7,7 +7,7 @@ from pathlib import Path
 
 def _has_transparency(img) -> bool:
     """JPEG has no alpha channel: re-encoding these would paint transparent areas black."""
-    return img.mode in ("RGBA", "LA", "PA") or "transparency" in img.info
+    return any(band.lower() == "a" for band in img.getbands()) or "transparency" in img.info
 
 
 class OfficeDocOptimizerMixin:

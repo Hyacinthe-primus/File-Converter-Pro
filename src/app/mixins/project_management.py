@@ -287,11 +287,7 @@ class ProjectManagementMixin:
         _apply_dialog_btn(btn_cancel, "BtnCancelGlassy")
         btn_ok = QPushButton(self.translate_text("save"))
         btn_ok.setMinimumHeight(36)
-        btn_ok.setStyleSheet(
-            "QPushButton{background:#0969da;color:white;border:none;"
-            "border-radius:7px;font-weight:bold;padding:0 16px;}"
-            "QPushButton:hover{background:#0860ca;}"
-        )
+        _apply_dialog_btn(btn_ok, "BtnIndigo")
         btn_cancel.clicked.connect(d.reject)
         btn_ok.clicked.connect(d.accept)
         btn_row.addStretch()

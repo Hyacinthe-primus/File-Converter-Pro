@@ -2196,11 +2196,11 @@ class QuickAchievementsReset(QDialog):
             "adv_avi_to_mp4",
             "adv_webm_to_mp4",
             "adv_mkv_to_mp4",
-            "adv_mov_to_mp4",  # was missing — entry 34 in _ADV_TYPE_MAP
+            "adv_mov_to_mp4",
             "adv_mp4_to_mp3",
             "adv_avi_to_mp3",
             "adv_webm_to_mp3",
-            "adv_mkv_to_mp3",  # was missing — entry 36 in _ADV_TYPE_MAP
+            "adv_mkv_to_mp3",
             "adv_wav_to_mp3",
             "adv_mp3_to_wav",
             "adv_aac_to_mp3",
@@ -2327,7 +2327,7 @@ def show_achievements_status_cli():
         achievements = cursor.fetchall()
         conn.close()
         unlocked_count = sum(1 for a in achievements if a[2])
-        print("📊 Achievement status:")
+        print("Achievement status:")
         print(f"   Total:    {len(achievements)}")
         print(f"   Unlocked: {unlocked_count}")
         print(f"   Locked:   {len(achievements) - unlocked_count}")
@@ -2339,7 +2339,7 @@ def show_achievements_status_cli():
             print(f"   Progress: {progress}/{max_progress}")
             print()
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":

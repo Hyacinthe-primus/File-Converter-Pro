@@ -20,8 +20,6 @@ class ConversionCancelled(Exception):
 
 @dataclass(frozen=True)
 class PipelineResult:
-    """Outcome of one staged conversion pipeline run."""
-
     success: bool
     error: str = ""
     cancelled: bool = False
@@ -93,17 +91,16 @@ def run_conversion_pipeline(
     postprocess: Callable[[str], None] | None = None,
     include_engine_labels: bool = True,
 ) -> PipelineResult:
-    """Run engines in order and commit *destination* only after validation.
+    """Run engines in order; commit *destination* only after validation.
 
-    Engines receive an isolated target path. The first engine whose output
-    validates is atomically moved into place. Existing output is untouched
-    until that point. Cancellation is checked before each engine, immediately
-    after it returns, after post-processing, and immediately before commit.
+    Each engine writes to an isolated staged path. The first output that
+    validates is moved into place with os.replace, so existing output is
+    untouched until then. Cancellation is checked before and after each
+    engine, after postprocess, and just before commit.
 
-    When *staged_name* is provided, directory staging uses that exact basename
-    inside each isolated attempt directory. This preserves engines that infer
-    metadata (such as a document title) from the final destination filename
-    while still keeping the temporary output away from the destination.
+    *staged_name* fixes the basename inside each attempt directory (directory
+    staging only), for engines that derive metadata such as a title from the
+    destination filename.
     """
     final_path = os.path.abspath(destination)
     parent = os.path.dirname(final_path)

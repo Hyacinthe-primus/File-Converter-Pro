@@ -1,13 +1,12 @@
-"""Native (no LibreOffice) previews of OpenDocument files: ODT, ODS and ODP.
+"""Native previews of OpenDocument files (ODT, ODS, ODP), without LibreOffice.
 
-Pure parsing helpers, with no Qt dependency except the small data containers:
-    - read_thumbnail(path)  -> PNG bytes embedded by the authoring app (first page)
-    - odt_to_html(path)     -> OdtPreview(html, images)   (text, lists, tables, images)
-    - ods_sheets(path)      -> [(sheet name, rows)]       (values as displayed)
-    - odp_slides(path)      -> [[text line, ...], ...]    (text of each slide)
+    read_thumbnail(path): PNG bytes of the first page, if the file embeds one
+    odt_to_html(path): OdtPreview with HTML and images (text, lists, tables)
+    ods_sheets(path): list of (sheet name, rows), values as displayed
+    odp_slides(path): list of slides, each a list of text lines
 
-This is a simplified view: no page layout, headers/footers, charts or exact
-fonts. Everything is size-capped so a huge document cannot freeze the UI.
+Simplified view: no page layout, headers/footers, charts or exact fonts.
+Everything is size-capped so a huge document can't freeze the UI.
 """
 
 from __future__ import annotations
@@ -35,7 +34,7 @@ _TEXT_NODE = 3
 
 
 class OdfTooLarge(Exception):
-    """The file is too big to preview natively."""
+    """The file is too big to preview."""
 
 
 @dataclass
@@ -56,7 +55,7 @@ def _check_size(path: str) -> None:
 
 
 def read_thumbnail(path: str) -> bytes | None:
-    """The first-page thumbnail LibreOffice/OpenOffice store in the file, if any."""
+    """First-page PNG stored in the file by LibreOffice/OpenOffice, or None."""
     try:
         with zipfile.ZipFile(path) as zf:
             info = zf.getinfo(THUMBNAIL_PATH)
@@ -75,13 +74,8 @@ def _is(node, ns: str, name: str) -> bool:
     return getattr(node, "qname", None) == (ns, name)
 
 
-# ---------------------------------------------------------------------------
-# ODT
-# ---------------------------------------------------------------------------
-
-
 def _text_styles(doc) -> dict[str, tuple[bool, bool, bool]]:
-    """style name -> (bold, italic, underline) from the document's styles."""
+    """Map style name to (bold, italic, underline)."""
     result: dict[str, tuple[bool, bool, bool]] = {}
     for container in (doc.automaticstyles, doc.styles):
         for st in container.childNodes:
@@ -103,8 +97,6 @@ class _OdtRenderer:
         self.styles = _text_styles(doc)
         self.images: dict[str, bytes] = {}
         self.blocks = 0
-
-    # -- inline ------------------------------------------------------------
 
     def inline(self, node) -> str:
         out = []
@@ -159,8 +151,6 @@ class _OdtRenderer:
         name = f"odfimg://{len(self.images)}"
         self.images[name] = bytes(data)
         return f'<img src="{name}" style="max-width:100%">'
-
-    # -- blocks ------------------------------------------------------------
 
     def blocks_html(self, parent) -> str:
         out = []
@@ -231,13 +221,8 @@ def odt_to_html(path: str) -> OdtPreview:
     return OdtPreview(html=html, images=renderer.images)
 
 
-# ---------------------------------------------------------------------------
-# ODS
-# ---------------------------------------------------------------------------
-
-
 def _cell_text(cell) -> str:
-    """Value as the spreadsheet displays it (formatting is stored in the text:p)."""
+    """Cell value as displayed (the formatted text lives in text:p)."""
     paragraphs = [teletype.extractText(p) for p in cell.childNodes if _is(p, TEXTNS, "p")]
     shown = "\n".join(p for p in paragraphs if p)
     if shown:
@@ -297,13 +282,8 @@ def ods_sheets(path: str) -> list[tuple[str, list[list[str]]]]:
     return sheets
 
 
-# ---------------------------------------------------------------------------
-# ODP
-# ---------------------------------------------------------------------------
-
-
 def _paragraph_texts(node) -> list[str]:
-    """Text of every paragraph/heading under ``node``, in document order."""
+    """Text of every paragraph and heading under node, in document order."""
     found: list[str] = []
     for ch in node.childNodes:
         if _is(ch, TEXTNS, "p") or _is(ch, TEXTNS, "h"):

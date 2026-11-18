@@ -471,7 +471,7 @@ class SystemNotifier:
             return True
 
         except Exception as e:
-            print(f"[NOTIFIER] ❌ Update check failed: {e}")
+            print(f"[NOTIFIER] Update check failed: {e}")
             return False
 
     def _show_notification(self, title: str, message: str, action_label: str, action_url: str, duration: str) -> None:

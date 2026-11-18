@@ -381,9 +381,7 @@ class DatabaseManager:
         cursor.execute("DELETE FROM templates WHERE id = ?", (template_id,))
         conn.commit()
 
-    # ------------------------------------------------------------------
     # Frequent-configuration tracking (drives auto-created templates)
-    # ------------------------------------------------------------------
 
     def get_config_usage(self, template_type, config_hash):
         """Return (use_count, status) for a tracked config, or None if never seen."""

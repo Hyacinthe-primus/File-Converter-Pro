@@ -5,6 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 
+def _has_transparency(img) -> bool:
+    """JPEG has no alpha channel: re-encoding these would paint transparent areas black."""
+    return img.mode in ("RGBA", "LA", "PA") or "transparency" in img.info
+
+
 class OfficeDocOptimizerMixin:
     """Word/PowerPoint/Excel optimization methods."""
 
@@ -32,6 +37,8 @@ class OfficeDocOptimizerMixin:
                                     buf_in = _io.BytesIO(blob)
                                     buf_out = _io.BytesIO()
                                     with PILImage.open(buf_in) as img:
+                                        if _has_transparency(img):
+                                            continue
                                         img.convert("RGB").save(
                                             buf_out, format="JPEG", quality=jpeg_quality, optimize=True
                                         )
@@ -92,6 +99,8 @@ class OfficeDocOptimizerMixin:
                                         buf_in = io.BytesIO(blob)
                                         buf_out = io.BytesIO()
                                         with PILImage.open(buf_in) as img:
+                                            if _has_transparency(img):
+                                                continue
                                             rgb = img.convert("RGB")
                                             rgb.save(buf_out, format="JPEG", quality=jpeg_quality, optimize=True)
                                         new_blob = buf_out.getvalue()

@@ -410,7 +410,8 @@ class DocumentConverters:
                 data = json.load(f)
             if not isinstance(data, list) or not data:
                 return False
-            keys = list(data[0].keys())
+            # Records may have different fields; use every key, in first-seen order.
+            keys = list(dict.fromkeys(k for row in data for k in row))
             with open(dst, "w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=keys)
                 writer.writeheader()

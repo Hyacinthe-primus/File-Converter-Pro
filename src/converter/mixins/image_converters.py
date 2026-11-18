@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -142,7 +143,7 @@ class ImageConverters:
         if not magick:
             return False
         try:
-            cmd = [magick, src, dst]
+            cmd = [magick, os.path.abspath(src), os.path.abspath(dst)]
             result = subprocess.run(cmd, capture_output=True, timeout=60, creationflags=_NO_WINDOW)
             return result.returncode == 0
         except Exception as e:

@@ -36,9 +36,6 @@ src/Assets/icon_PRE.png
 # Automatically generated reports
 sfx_report.txt
 
-# settings reader script
-sett_reader.py
-
 # Virtual environments
 venv/
 .venv/
@@ -53,5 +50,5 @@ social-preview.png
 
 # Local session notes
 HANDOFF.md
-FCP_Remaining_Architecture_Work
+FCP_Remaining_Architecture_Work.md
 releases.md

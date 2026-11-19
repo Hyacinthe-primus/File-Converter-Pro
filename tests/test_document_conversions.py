@@ -73,6 +73,15 @@ def test_json_to_csv(tmp_path):
     assert "a,b" in lines[0]
 
 
+def test_json_to_csv_records_with_different_fields(tmp_path):
+    src = tmp_path / "test.json"
+    src.write_text(json.dumps([{"id": 1, "name": "Ann"}, {"id": 2, "email": "bob@x.com"}]), encoding="utf-8")
+    dst = tmp_path / "test.csv"
+    result = _engine()._json_to_csv(str(src), str(dst))
+    assert result is True
+    assert dst.read_text(encoding="utf-8").splitlines() == ["id,name,email", "1,Ann,", "2,,bob@x.com"]
+
+
 def test_txt_to_docx(tmp_path):
     src = tmp_path / "test.txt"
     src.write_text("Hello\nWorld", encoding="utf-8")

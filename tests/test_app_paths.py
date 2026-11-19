@@ -54,6 +54,12 @@ def test_ensure_data_dir_creates_folder(monkeypatch, tmp_path):
     assert target.is_dir()
 
 
+def test_is_packaged_false_in_development(monkeypatch):
+    monkeypatch.delattr(sys, "frozen", raising=False)
+
+    assert app_paths.is_packaged() is False
+
+
 def _fake_frozen_app(monkeypatch, tmp_path):
     """Point the app at a fake install dir and a fake per-user data root."""
     app_dir = tmp_path / "app"

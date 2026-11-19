@@ -1058,36 +1058,41 @@ class SettingsDialog(TranslationMixin, QDialog):
         layout.setContentsMargins(8, 10, 8, 10)
         layout.setSpacing(12)
 
+        from app_paths import is_packaged
         from daemon import is_autostart_enabled
 
-        autostart_group = QGroupBox(self.translate_text("automation_daemon"))
-        autostart_group.setObjectName("SettingsGroup")
-        autostart_layout = QVBoxLayout(autostart_group)
-        autostart_layout.setSpacing(8)
+        # Packaged (MSIX) builds cannot use the Run key. Offering the toggle
+        # would silently break automation: the GUI would stop running the
+        # watcher/scheduler, while no daemon can ever start at login.
+        if not is_packaged():
+            autostart_group = QGroupBox(self.translate_text("automation_daemon"))
+            autostart_group.setObjectName("SettingsGroup")
+            autostart_layout = QVBoxLayout(autostart_group)
+            autostart_layout.setSpacing(8)
 
-        self._autostart_check = AnimatedCheckBox(
-            self.translate_text("launch_the_daemon_automatically_at_windows_startup")
-        )
-        self._autostart_check.setProperty("i18n_key", "launch_the_daemon_automatically_at_windows_startup")
-        self._autostart_check.setChecked(is_autostart_enabled())
-        self._autostart_check.stateChanged.connect(self._on_autostart_toggled)
-
-        hint = QLabel(
-            "ℹ️ "
-            + self.translate_text(
-                "the_daemon_monitors_your_folders_and_runs_scheduled_tasks_even_w"
+            self._autostart_check = AnimatedCheckBox(
+                self.translate_text("launch_the_daemon_automatically_at_windows_startup")
             )
-        )
-        hint.setProperty(
-            "i18n_key",
-            "the_daemon_monitors_your_folders_and_runs_scheduled_tasks_even_w",
-        )
-        hint.setWordWrap(True)
-        hint.setObjectName("SettingsHint")
+            self._autostart_check.setProperty("i18n_key", "launch_the_daemon_automatically_at_windows_startup")
+            self._autostart_check.setChecked(is_autostart_enabled())
+            self._autostart_check.stateChanged.connect(self._on_autostart_toggled)
 
-        autostart_layout.addWidget(self._autostart_check)
-        autostart_layout.addWidget(hint)
-        layout.addWidget(autostart_group)
+            hint = QLabel(
+                "ℹ️ "
+                + self.translate_text(
+                    "the_daemon_monitors_your_folders_and_runs_scheduled_tasks_even_w"
+                )
+            )
+            hint.setProperty(
+                "i18n_key",
+                "the_daemon_monitors_your_folders_and_runs_scheduled_tasks_even_w",
+            )
+            hint.setWordWrap(True)
+            hint.setObjectName("SettingsHint")
+
+            autostart_layout.addWidget(self._autostart_check)
+            autostart_layout.addWidget(hint)
+            layout.addWidget(autostart_group)
 
         wf_group = QGroupBox(self.translate_text("watched_folders"))
         wf_group.setObjectName("SettingsGroup")

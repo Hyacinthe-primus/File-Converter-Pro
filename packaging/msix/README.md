@@ -60,9 +60,8 @@ Output: `packaging\dist\msix\FileConverterPro_<version>_<arch>.msix`.
 
 1. Run the **Windows App Certification Kit** against the package.
 2. In Partner Center, complete:
-   - Store listing (description, screenshots, category)
-   - Privacy policy URL (the app processes files locally, so a short page
-     stating that is enough)
+   - Store listing — use the copy in `STORE_LISTING.md`
+   - Privacy policy URL — host the text in `STORE_LISTING.md`
    - Support contact
    - Age rating questionnaire
 3. Upload the `.msix` on the **Packages** page. Do not upload a signed copy:
@@ -70,18 +69,22 @@ Output: `packaging\dist\msix\FileConverterPro_<version>_<arch>.msix`.
 
 ## Current limitations of the Store build
 
-These are tracked separately from packaging:
+These are deliberate gaps for the first Store release:
 
 - **Context menu entries** ("Convert with FCP") are written by the Inno Setup
-  installer to `HKCU\Software\Classes`. MSIX cannot do that; it needs a
-  `desktop6:Extension` (Windows 11 only). The Store build currently has no
-  right-click integration.
-- **Daemon autostart** writes a `Run` registry value in `src\daemon.py`. Under
-  MSIX this is virtualized and will not start the daemon. It needs a
-  `windows.startupTask` extension wired through the `StartupTask` API.
+  installer to `HKCU\Software\Classes`. MSIX cannot do that; it would need a
+  `desktop6:Extension` (Windows 11 only). Deferred: the app is fully usable
+  without shell integration, and certification does not require it.
+- **Daemon autostart** cannot use the `Run` registry key because MSIX
+  virtualizes HKCU. In a packaged build the toggle is hidden and the Run-key
+  helpers refuse to run (`app_paths.is_packaged()`), so the GUI keeps running
+  watch folders and scheduled tasks in-process while the app is open.
+  Starting the daemon at login needs a `windows.startupTask` extension; that
+  is deferred.
 - **External tools** (ffmpeg, LibreOffice, Ghostscript, ImageMagick, Tesseract,
-  7-Zip) are detected, never downloaded. The package is ~140 MB and those
-  conversions only work when the tool is installed. The listing must say so.
+  7-Zip, Pandoc, wkhtmltopdf) are detected, never downloaded. The package is
+  ~140–170 MB and those conversions only work when the tool is installed. The
+  listing must say so: see `STORE_LISTING.md`.
 - **Ghostscript is not bundled** (AGPL). Do not add it without a commercial
   license or complying with the AGPL.
 - **PySide6 is LGPLv3.** Ship the license notices that PyInstaller already
@@ -94,3 +97,4 @@ These are tracked separately from packaging:
 | `build_msix.ps1` | Entry point; stages, validates and packs |
 | `AppxManifest.template.xml` | Package manifest with `__TOKEN__` placeholders |
 | `make_assets.py` | Renders Store logo PNGs from `icon.ico` |
+| `STORE_LISTING.md` | Description, privacy policy and optional-tools notice |

@@ -1,23 +1,11 @@
 """
 Writable application-data locations.
 
-Read-only resources stay with the program: ``src/`` in development and the
-PyInstaller bundle (``sys._MEIPASS``) when frozen. Everything the app writes
-at runtime -- config, encryption key, SQLite databases, automation rules and
-logs -- belongs in a per-user writable folder, because packaged installs
-(MSIX / ``Program Files\\WindowsApps``) are read-only.
-
-Resolution order for :func:`get_data_dir`:
-
-1. ``FCP_DATA_DIR`` environment variable (portable installs and tests)
-2. frozen: ``%LOCALAPPDATA%\\FileConverterPro``
-   (POSIX: ``$XDG_DATA_HOME/FileConverterPro`` or ``~/.local/share/...``)
-3. development: the ``src/`` folder (preserves the existing dev workflow)
-
-Older builds wrote those files next to the executable (config) or inside the
-PyInstaller ``_internal`` folder (databases). :func:`migrate_legacy_data`
-copies them into the new location once, without overwriting anything and
-without deleting the originals.
+Resolution order for get_data_dir():
+1. FCP_DATA_DIR environment variable (portable installs and tests)
+2. frozen: %LOCALAPPDATA%\\FileConverterPro
+   (POSIX: $XDG_DATA_HOME/FileConverterPro or ~/.local/share/...)
+3. development: the src/ folder
 """
 
 from __future__ import annotations
@@ -32,8 +20,7 @@ from utils import SRC_DIR
 APP_FOLDER_NAME = "FileConverterPro"
 DATA_DIR_ENV = "FCP_DATA_DIR"
 
-# User-data files written by builds that had no writable data root. SQLite
-# sidecar files travel with their database so WAL contents are not lost.
+# SQLite sidecar files travel with their database so WAL contents are not lost.
 _LEGACY_FILES: tuple[str, ...] = (
     "file_converter_config.dat",
     "file_converter_key.key",
@@ -54,8 +41,24 @@ _migrated = False
 
 
 def is_frozen() -> bool:
-    """True when running from a PyInstaller build."""
     return bool(getattr(sys, "frozen", False))
+
+
+def is_packaged() -> bool:
+    """True inside an MSIX/AppX package (registry writes are virtualized there)."""
+    if os.name != "nt" or not is_frozen():
+        return False
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        length = wintypes.UINT(0)
+        # 122 (ERROR_INSUFFICIENT_BUFFER) = package identity exists;
+        # 15700 (APPMODEL_ERROR_NO_PACKAGE) = unpackaged.
+        result = ctypes.windll.kernel32.GetCurrentPackageFullName(ctypes.byref(length), None)
+        return result == 122
+    except Exception:
+        return False
 
 
 def get_data_dir() -> Path:
@@ -76,19 +79,18 @@ def get_data_dir() -> Path:
 
 
 def ensure_data_dir() -> Path:
-    """Return the data folder, creating it when missing."""
     path = get_data_dir()
     path.mkdir(parents=True, exist_ok=True)
     return path
 
 
 def get_legacy_dirs() -> list[Path]:
-    """Folders older builds may have written user data to (frozen only)."""
+    """Folders older builds wrote user data to (frozen only)."""
     if not is_frozen():
         return []
 
     exe_dir = Path(sys.executable).resolve().parent
-    # PyInstaller sets _MEIPASS to the bundle folder (onedir: <app>\_internal).
+    # onedir builds: _MEIPASS is <app>\_internal
     bundle_dir = getattr(sys, "_MEIPASS", None)
     candidates = [exe_dir, Path(bundle_dir) if bundle_dir else exe_dir / "_internal"]
     unique: list[Path] = []
@@ -102,7 +104,6 @@ def get_legacy_dirs() -> list[Path]:
 
 
 def _copy_missing(src: Path, dst: Path) -> bool:
-    """Copy *src* to *dst* only when the destination does not exist yet."""
     if not src.is_file() or dst.exists():
         return False
     try:
@@ -115,13 +116,11 @@ def _copy_missing(src: Path, dst: Path) -> bool:
 
 
 def migrate_legacy_data() -> list[str]:
-    """Copy pre-existing user data into :func:`get_data_dir`.
+    """Copy legacy user data into get_data_dir() once.
 
-    Idempotent and non-destructive: existing destination files win, source
-    files are left in place. Returns the names that were copied.
-
-    Skipped in development and when ``FCP_DATA_DIR`` is set, because in both
-    cases the caller already controls the location.
+    Never overwrites existing files and leaves the originals in place.
+    Skipped in development and when FCP_DATA_DIR is set.
+    Returns the names that were copied.
     """
     global _migrated
     if _migrated:
@@ -155,7 +154,7 @@ def migrate_legacy_data() -> list[str]:
 
 
 def _reset_cache() -> None:
-    """Allow migration to run again (used by tests)."""
+    """Test hook: allow migration to run again."""
     global _migrated
     _migrated = False
 
@@ -167,5 +166,6 @@ __all__ = [
     "get_data_dir",
     "get_legacy_dirs",
     "is_frozen",
+    "is_packaged",
     "migrate_legacy_data",
 ]

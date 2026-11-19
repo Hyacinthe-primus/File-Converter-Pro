@@ -8,7 +8,7 @@ import logging
 import sys
 import time
 
-from app_paths import ensure_data_dir
+from app_paths import ensure_data_dir, is_packaged
 
 LOG_MAX_LINES = 200
 
@@ -45,6 +45,13 @@ def _trim_log_if_clean() -> None:
 
 
 def set_autostart(enabled: bool, exe_path: str | None = None) -> None:
+    if is_packaged():
+        # MSIX virtualizes HKCU: a Run value written here never reaches the
+        # Windows startup logic, so refuse instead of pretending it worked.
+        logging.getLogger(__name__).info(
+            "[Daemon] Autostart is unavailable in a packaged build; ignoring request."
+        )
+        return
     try:
         import winreg
 
@@ -70,6 +77,10 @@ def set_autostart(enabled: bool, exe_path: str | None = None) -> None:
 
 
 def is_autostart_enabled() -> bool:
+    if is_packaged():
+        # Reporting True here would stop the GUI from starting the watcher and
+        # scheduler in-process, while no daemon can ever start at login.
+        return False
     try:
         import winreg
 

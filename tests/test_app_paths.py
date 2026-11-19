@@ -34,12 +34,16 @@ def test_env_override_wins(monkeypatch, tmp_path):
     assert _norm(app_paths.get_data_dir()) == _norm(target)
 
 
-def test_frozen_uses_localappdata(monkeypatch, tmp_path):
+def test_frozen_uses_platform_data_root(monkeypatch, tmp_path):
     monkeypatch.delenv(app_paths.DATA_DIR_ENV, raising=False)
     monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
+    root = tmp_path / "platform-root"
+    if os.name == "nt":
+        monkeypatch.setenv("LOCALAPPDATA", str(root))
+    else:
+        monkeypatch.setenv("XDG_DATA_HOME", str(root))
 
-    assert _norm(app_paths.get_data_dir()) == _norm(tmp_path / "local" / app_paths.APP_FOLDER_NAME)
+    assert _norm(app_paths.get_data_dir()) == _norm(root / app_paths.APP_FOLDER_NAME)
 
 
 def test_ensure_data_dir_creates_folder(monkeypatch, tmp_path):
@@ -51,14 +55,18 @@ def test_ensure_data_dir_creates_folder(monkeypatch, tmp_path):
 
 
 def _fake_frozen_app(monkeypatch, tmp_path):
-    """Point the app at a fake install dir and a fake LOCALAPPDATA."""
+    """Point the app at a fake install dir and a fake per-user data root."""
     app_dir = tmp_path / "app"
     app_dir.mkdir()
+    root = tmp_path / "local"
     monkeypatch.delenv(app_paths.DATA_DIR_ENV, raising=False)
     monkeypatch.setattr(sys, "frozen", True, raising=False)
     monkeypatch.setattr(sys, "executable", str(app_dir / "FCP.exe"))
-    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
-    return app_dir, tmp_path / "local" / app_paths.APP_FOLDER_NAME
+    if os.name == "nt":
+        monkeypatch.setenv("LOCALAPPDATA", str(root))
+    else:
+        monkeypatch.setenv("XDG_DATA_HOME", str(root))
+    return app_dir, root / app_paths.APP_FOLDER_NAME
 
 
 def test_migrate_copies_legacy_files(monkeypatch, tmp_path):

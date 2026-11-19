@@ -273,7 +273,7 @@ class AchievementSystem(QObject):
                     "id": "file_god",
                     "name": "The God of Files",
                     "description": "Unlock absolutely all other achievements",
-                    "icon": "100%_platinium.png",
+                    "icon": "100_Platinium.png",
                     "category": "ultimate",
                     "tier": "platinum",
                     "requirement": {"type": "all_achievements", "value": True},

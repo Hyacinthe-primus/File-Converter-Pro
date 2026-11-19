@@ -73,6 +73,14 @@ def test_csv_to_json_excel_encodings(tmp_path):
         assert json.loads(dst.read_text(encoding="utf-8")) == [{"Name": "José", "City": "München"}]
 
 
+def test_csv_to_json_semicolon_delimiter(tmp_path):
+    src = tmp_path / "semi.csv"
+    src.write_text("name;price;qty\r\nApple;1,50;3\r\n", encoding="utf-8")
+    dst = tmp_path / "semi.json"
+    assert _engine()._csv_to_json(str(src), str(dst)) is True
+    assert json.loads(dst.read_text(encoding="utf-8")) == [{"name": "Apple", "price": "1,50", "qty": "3"}]
+
+
 def test_json_to_csv(tmp_path):
     src = tmp_path / "test.json"
     src.write_text(json.dumps([{"a": 1, "b": 2}, {"a": 3, "b": 4}]), encoding="utf-8")

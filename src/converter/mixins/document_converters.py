@@ -404,7 +404,12 @@ class DocumentConverters:
                     break
                 except UnicodeDecodeError:
                     pass
-            data = list(csv.DictReader(io.StringIO(text, newline="")))
+            # Excel uses ";" in locales where "," is the decimal separator.
+            try:
+                dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
+            except csv.Error:
+                dialect = csv.excel
+            data = list(csv.DictReader(io.StringIO(text, newline=""), dialect=dialect))
             with open(dst, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             return True

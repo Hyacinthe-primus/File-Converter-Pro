@@ -25,14 +25,14 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 
-from utils import SRC_DIR
+from app_paths import ensure_data_dir
 
 
 class DatabaseManager:
     """Database manager for history and statistics"""
 
     def __init__(self):
-        self.db_path = os.path.join(str(SRC_DIR), "file_converter_stats.db")
+        self.db_path = os.path.join(str(ensure_data_dir()), "file_converter_stats.db")
         self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL")
         self.init_database()

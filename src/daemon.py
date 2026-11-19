@@ -7,20 +7,15 @@ Logs to automation/daemon.log. Auto-reloads when automation/*.toml changes.
 import logging
 import sys
 import time
-from pathlib import Path
 
-from utils import SRC_DIR
+from app_paths import ensure_data_dir
 
 LOG_MAX_LINES = 200
 
 
-def _get_base_dir():
-    if getattr(sys, "frozen", False):
-        return Path(sys.executable).parent
-    return SRC_DIR
-
-
-BASE_DIR = _get_base_dir()
+# Runtime files live in the writable per-user folder: packaged installs
+# (MSIX / Program Files) cannot be written to.
+BASE_DIR = ensure_data_dir()
 AUTOMATION_DIR = BASE_DIR / "automation"
 LOG_FILE = AUTOMATION_DIR / "daemon.log"
 RELOAD_FLAG = AUTOMATION_DIR / ".reload"

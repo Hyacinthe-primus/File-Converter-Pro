@@ -17,9 +17,9 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 
-from utils import SRC_DIR
+from app_paths import get_data_dir
 
-DEFAULT_DB_PATH = os.path.join(str(SRC_DIR), "file_converter_advanced.db")
+DEFAULT_DB_PATH = os.path.join(str(get_data_dir()), "file_converter_advanced.db")
 
 
 class AdvancedDatabaseManager:
@@ -44,6 +44,7 @@ class AdvancedDatabaseManager:
         self._init_database()
 
     def _init_database(self) -> None:
+        os.makedirs(os.path.dirname(os.path.abspath(self.db_path)), exist_ok=True)
         with self._connect() as conn:
             cur = conn.cursor()
 

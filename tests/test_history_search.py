@@ -19,7 +19,7 @@ def test_matching_operation_types_uses_localized_labels():
 def db(tmp_path, monkeypatch):
     import database
 
-    monkeypatch.setattr(database, "SRC_DIR", tmp_path)
+    monkeypatch.setattr(database, "ensure_data_dir", lambda: tmp_path)
     manager = database.DatabaseManager()
     yield manager
     manager.close()

@@ -20,7 +20,7 @@ def tm(tmp_path, monkeypatch):
     import database
     from templates import TemplateManager
 
-    monkeypatch.setattr(database, "SRC_DIR", tmp_path)
+    monkeypatch.setattr(database, "ensure_data_dir", lambda: tmp_path)
     db = database.DatabaseManager()
     yield TemplateManager(db)
     db.close()

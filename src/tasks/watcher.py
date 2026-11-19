@@ -10,7 +10,6 @@ import hashlib
 import json
 import logging
 import os
-import sys
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -86,12 +85,9 @@ def _is_temp_file(path: str | Path) -> bool:
 
 
 def _get_automation_dir() -> Path:
-    if getattr(sys, "frozen", False):
-        base = Path(sys.executable).parent
-    else:
-        from utils import SRC_DIR
-        base = SRC_DIR
-    return base / "automation"
+    from app_paths import get_data_dir
+
+    return get_data_dir() / "automation"
 
 
 def _load_all_toml() -> dict:

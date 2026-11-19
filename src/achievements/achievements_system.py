@@ -16,6 +16,7 @@ from datetime import datetime
 
 from PySide6.QtCore import QObject, QTimer, Signal
 
+from app_paths import ensure_data_dir
 from utils import SRC_DIR, resource_path
 
 _ROOT_DIR = str(SRC_DIR)
@@ -41,12 +42,7 @@ class AchievementSystem(QObject):
         self.achievements_data = None
         self.stats = {}
 
-        if getattr(sys, "frozen", False):
-            app_dir = os.path.dirname(sys.executable)
-        else:
-            app_dir = str(SRC_DIR)
-
-        self.db_path = os.path.join(app_dir, "achievements.db")
+        self.db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         if not os.path.exists(self.db_path):
             print("[INFO] Creating achievements database...")
 

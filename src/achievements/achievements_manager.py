@@ -16,6 +16,7 @@ _SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _SRC_DIR not in sys.path:
     sys.path.insert(0, _SRC_DIR)
 
+from app_paths import ensure_data_dir
 from utils import SRC_DIR, resource_path
 
 _ROOT_DIR = str(SRC_DIR)
@@ -49,18 +50,6 @@ try:
 except ImportError as e:
     print(f"[ERROR] Unable to import ConfigManager from config.py: {e}")
     sys.exit(1)
-
-
-def get_app_dir():
-    """
-    Returns the project root directory.
-    - PyInstaller : directory of the .exe  (NOT _MEIPASS)
-    - Development : parent of this package (achievements/)
-    """
-    if getattr(sys, "frozen", False):
-        return os.path.dirname(sys.executable)
-    else:
-        return _ROOT_DIR
 
 
 def get_assets_dir():
@@ -735,8 +724,7 @@ class AchievementsManager(QDialog):
         super().__init__(parent)
 
         if db_path == "achievements.db":
-            script_dir = get_app_dir()
-            self.db_path = os.path.join(script_dir, "achievements.db")
+            self.db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         else:
             self.db_path = db_path
 
@@ -1386,7 +1374,6 @@ class AchievementsManager(QDialog):
                         sound_file = group["sfx"]
                         break
 
-            get_app_dir()
             sound_path = os.path.join(get_assets_dir(), "Assets", "SFX", sound_file)
 
             if not os.path.exists(sound_path):
@@ -1761,8 +1748,7 @@ class QuickAchievementsReset(QDialog):
         super().__init__(parent)
 
         if db_path == "achievements.db":
-            script_dir = get_app_dir()
-            self.db_path = os.path.join(script_dir, "achievements.db")
+            self.db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         else:
             self.db_path = db_path
 
@@ -2255,8 +2241,7 @@ class QuickAchievementsReset(QDialog):
 def reset_specific_achievement_cli(achievement_id):
     """Reset a specific achievement (CLI)"""
     try:
-        script_dir = get_app_dir()
-        db_path = os.path.join(script_dir, "achievements.db")
+        db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
@@ -2277,8 +2262,7 @@ def reset_specific_achievement_cli(achievement_id):
 def unlock_specific_achievement_cli(achievement_id):
     """Unlock a specific achievement (CLI)"""
     try:
-        script_dir = get_app_dir()
-        db_path = os.path.join(script_dir, "achievements.db")
+        db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT max_progress FROM achievements WHERE id = ?", (achievement_id,))
@@ -2301,8 +2285,7 @@ def unlock_specific_achievement_cli(achievement_id):
 def reset_all_achievements_cli():
     """Reset all achievements (CLI)"""
     try:
-        script_dir = get_app_dir()
-        db_path = os.path.join(script_dir, "achievements.db")
+        db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
@@ -2319,8 +2302,7 @@ def reset_all_achievements_cli():
 def show_achievements_status_cli():
     """Display achievement status (CLI)"""
     try:
-        script_dir = get_app_dir()
-        db_path = os.path.join(script_dir, "achievements.db")
+        db_path = os.path.join(str(ensure_data_dir()), "achievements.db")
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("SELECT id, name, unlocked, progress, max_progress FROM achievements")
@@ -2368,7 +2350,6 @@ if __name__ == "__main__":
     else:
         app = QApplication(sys.argv)
         manager = QuickAchievementsReset()
-        script_dir = get_app_dir()
         icon_path = resource_path(os.path.join("Assets", "manager_icon.ico"))
         if os.path.exists(icon_path):
             manager.setWindowIcon(QIcon(icon_path))

@@ -100,7 +100,14 @@ def _fcp_err(msg: str) -> None:
 
 
 if getattr(sys, "frozen", False):
-    os.chdir(os.path.dirname(sys.executable))
+    # The install folder is read-only once packaged (MSIX / Program Files),
+    # so keep the working directory in the writable per-user data folder.
+    from app_paths import ensure_data_dir
+
+    try:
+        os.chdir(ensure_data_dir())
+    except OSError as _exc:
+        print(f"Could not switch to data directory: {_exc}")
 
 if "--daemon" in sys.argv:
     from rich.console import Console

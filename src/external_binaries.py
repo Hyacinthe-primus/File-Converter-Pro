@@ -7,8 +7,9 @@ All candidate paths live in :data:`TOOLS` - declare them nowhere else.
 
 Lookup order: system PATH -> app-local dir -> common system dirs -> config file.
 
-Config file: config/external_binaries.conf (INI), next to the exe when frozen,
-or project root in dev. Override path with FCP_EXTERNAL_BINARIES_CONF.
+Config file: config/external_binaries.conf (INI). Search order when frozen:
+per-user data folder, then next to the exe. In development the project root
+is used. Override the path with FCP_EXTERNAL_BINARIES_CONF.
 
     [binaries]
     ffmpeg = C:\\ffmpeg\\bin\\ffmpeg.exe
@@ -36,6 +37,7 @@ import shutil
 import sys
 from dataclasses import dataclass
 
+from app_paths import get_data_dir
 from utils import SRC_DIR
 
 CONFIG_FOLDER = "config"
@@ -270,6 +272,9 @@ def _config_candidates() -> list[str]:
         # so a stale fallback elsewhere can never shadow the user's choice.
         return [override]
     if getattr(sys, "frozen", False):
+        # Writable override first: a packaged install folder is read-only,
+        # so a config stored there can never be edited by the user.
+        candidates.append(os.path.join(str(get_data_dir()), CONFIG_FOLDER, CONFIG_FILE))
         exe_dir = os.path.dirname(sys.executable)
         candidates.append(os.path.join(exe_dir, CONFIG_FOLDER, CONFIG_FILE))
         candidates.append(os.path.join(exe_dir, "_internal", CONFIG_FOLDER, CONFIG_FILE))

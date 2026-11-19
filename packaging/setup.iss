@@ -222,11 +222,43 @@ var
 begin
   Lower := LowerCase(FileName);
   Result := (Lower = 'achievements.db') or
+            (Lower = 'achievements.db-shm') or
+            (Lower = 'achievements.db-wal') or
             (Lower = 'file_converter_advanced.db') or
+            (Lower = 'file_converter_advanced.db-shm') or
+            (Lower = 'file_converter_advanced.db-wal') or
             (Lower = 'file_converter_config.dat') or
             (Lower = 'file_converter_key.key') or
             (Lower = 'file_converter_stats.db') or
+            (Lower = 'file_converter_stats.db-shm') or
+            (Lower = 'file_converter_stats.db-wal') or
             (Lower = 'special_events.db');
+end;
+
+procedure PreserveLegacyDatabases();
+var
+  InternalDir, SourcePath, TargetPath: String;
+  LegacyFiles: array of String;
+  I: Integer;
+begin
+  InternalDir := ExpandConstant('{app}\_internal');
+  if not DirExists(InternalDir) then Exit;
+
+  { Older builds kept these databases in _internal. Copy them next to the
+    executable, where IsPreservedFile keeps them, so the app can migrate
+    them to %LOCALAPPDATA%\FileConverterPro on its next launch. }
+  LegacyFiles := ['achievements.db', 'achievements.db-wal', 'achievements.db-shm',
+                  'file_converter_advanced.db', 'file_converter_advanced.db-wal',
+                  'file_converter_advanced.db-shm',
+                  'file_converter_stats.db', 'file_converter_stats.db-wal',
+                  'file_converter_stats.db-shm'];
+  for I := 0 to GetArrayLength(LegacyFiles) - 1 do
+  begin
+    SourcePath := InternalDir + '\' + LegacyFiles[I];
+    TargetPath := ExpandConstant('{app}\') + LegacyFiles[I];
+    if FileExists(SourcePath) then
+      CopyFile(SourcePath, TargetPath, True);
+  end;
 end;
 
 procedure CleanInstallDir();
@@ -935,6 +967,7 @@ begin
 
   if DirExists(ExpandConstant('{app}')) then
   begin
+    PreserveLegacyDatabases();
     CleanInstallDir();
     CleanOldRegistry();
   end;

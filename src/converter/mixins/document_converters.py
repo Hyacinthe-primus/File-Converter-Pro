@@ -15,6 +15,18 @@ from external_binaries import resolve_binary
 
 _NO_WINDOW = subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
 
+
+def _read_text_file(path: str) -> str:
+    """Read text written by Windows editors: UTF-8 (with BOM) or the ANSI code page."""
+    raw = Path(path).read_bytes()
+    for encoding in ("utf-8-sig", "cp1252"):
+        try:
+            return raw.decode(encoding)
+        except UnicodeDecodeError:
+            pass
+    return raw.decode("latin-1")
+
+
 _MD_HTML_STYLE = """
   <style>
     :root {
@@ -112,7 +124,7 @@ class DocumentConverters:
         try:
             import markdown
 
-            source = Path(src).read_text(encoding="utf-8", errors="replace")
+            source = _read_text_file(src)
             body = markdown.markdown(source, extensions=["extra", "sane_lists"])
             title = escape(Path(src).stem)
             document = (
@@ -146,8 +158,8 @@ class DocumentConverters:
             y = height - margin
             c.setFont("Helvetica", 11)
 
-            with open(src, "r", encoding="utf-8", errors="replace") as f:
-                for line in f:
+            with io.StringIO(_read_text_file(src)) as text_stream:
+                for line in text_stream:
                     wrapped = simpleSplit(line.rstrip(), "Helvetica", 11, width - 2 * margin)
                     for wl in wrapped:
                         if y < margin:
@@ -165,7 +177,7 @@ class DocumentConverters:
     def _rtf_to_pdf(self, src: str, dst: str) -> bool:
         """Convert RTF to PDF via internal parser + reportlab."""
         try:
-            raw = open(src, "r", encoding="utf-8", errors="replace").read()
+            raw = _read_text_file(src)
             spans = self._rtf_to_spans(raw)
             return self._rtf_spans_to_pdf(spans, dst)
         except Exception as e:
@@ -360,8 +372,8 @@ class DocumentConverters:
             from docx import Document
 
             doc = Document()
-            with open(src, "r", encoding="utf-8", errors="replace") as f:
-                for line in f:
+            with io.StringIO(_read_text_file(src)) as text_stream:
+                for line in text_stream:
                     doc.add_paragraph(line.rstrip())
             doc.save(dst)
             return True
@@ -373,7 +385,7 @@ class DocumentConverters:
         try:
             from docx import Document
 
-            raw = open(src, "r", encoding="utf-8", errors="replace").read()
+            raw = _read_text_file(src)
             spans = self._rtf_to_spans(raw)
             doc = Document()
             para = doc.add_paragraph()
@@ -395,15 +407,8 @@ class DocumentConverters:
 
     def _csv_to_json(self, src: str, dst: str) -> bool:
         try:
-            with open(src, "rb") as f:
-                raw = f.read()
             # Excel writes "CSV UTF-8" with a BOM and plain "CSV" in the ANSI code page.
-            for enc in ("utf-8-sig", "cp1252", "latin-1"):
-                try:
-                    text = raw.decode(enc)
-                    break
-                except UnicodeDecodeError:
-                    pass
+            text = _read_text_file(src)
             # Excel uses ";" in locales where "," is the decimal separator.
             try:
                 dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
@@ -419,7 +424,7 @@ class DocumentConverters:
 
     def _json_to_csv(self, src: str, dst: str) -> bool:
         try:
-            with open(src, "r", encoding="utf-8") as f:
+            with open(src, "r", encoding="utf-8-sig") as f:
                 data = json.load(f)
             if not isinstance(data, list) or not data:
                 return False

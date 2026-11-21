@@ -93,6 +93,25 @@ def test_json_to_csv(tmp_path):
     assert "a,b" in lines[0]
 
 
+def test_json_to_csv_utf8_bom(tmp_path):
+    src = tmp_path / "bom.json"
+    src.write_bytes(b'\xef\xbb\xbf[{"a": 1, "b": 2}]')
+    dst = tmp_path / "bom.csv"
+    assert _engine()._json_to_csv(str(src), str(dst)) is True
+    assert dst.read_text(encoding="utf-8").splitlines() == ["a,b", "1,2"]
+
+
+def test_txt_to_docx_windows_ansi(tmp_path):
+    from docx import Document
+
+    text = "Café — naïve"
+    src = tmp_path / "ansi.txt"
+    src.write_bytes(text.encode("cp1252"))
+    dst = tmp_path / "ansi.docx"
+    assert _engine()._txt_to_docx(str(src), str(dst)) is True
+    assert Document(str(dst)).paragraphs[0].text == text
+
+
 def test_json_to_csv_records_with_different_fields(tmp_path):
     src = tmp_path / "test.json"
     src.write_text(json.dumps([{"id": 1, "name": "Ann"}, {"id": 2, "email": "bob@x.com"}]), encoding="utf-8")

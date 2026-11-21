@@ -80,7 +80,7 @@ class ImageConverters:
             img.save(dst, format=fmt, **save_kwargs)
             return True
         except Exception as e:
-            print(f"[image→{conversion_type}] {e}")
+            print(f"[image->{conversion_type}] {e}")
             return False
 
     def _image_to_ico(self, src: str, dst: str, conversion_type: str | None = None) -> bool:
@@ -103,7 +103,7 @@ class ImageConverters:
             img.save(dst, format="ICO", sizes=sizes)
             return True
         except Exception as e:
-            print(f"[image→ico] {e}")
+            print(f"[image->ico] {e}")
             return False
 
     @staticmethod
@@ -177,7 +177,7 @@ class ImageConverters:
         except (KeyboardInterrupt, SystemExit):
             raise
         except BaseException as e:
-            print(f"[image→svg] {e}")
+            print(f"[image->svg] {e}")
             try:
                 if Path(dst).is_file() and Path(dst).stat().st_size == 0:
                     Path(dst).unlink()
@@ -249,7 +249,7 @@ class ImageConverters:
             self._image_convert_save(img, dst, ext)
             return True
         except Exception as e:
-            print(f"[raw→{conversion_type}] {e}")
+            print(f"[raw->{conversion_type}] {e}")
             return False
 
     def _heic_convert(self, src: str, dst: str, conversion_type: str) -> bool:
@@ -264,5 +264,5 @@ class ImageConverters:
             self._image_convert_save(img, dst, ext)
             return True
         except Exception as e:
-            print(f"[heic→{conversion_type}] {e}")
+            print(f"[heic->{conversion_type}] {e}")
             return False

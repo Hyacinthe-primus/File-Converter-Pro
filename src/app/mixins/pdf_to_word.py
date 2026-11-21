@@ -407,7 +407,7 @@ class PdfToWordMixin:
 
             winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, "Word.Application")
         except (OSError, ImportError):
-            print("[PDF→DOCX] Word not found in registry — skipping COM tier")
+            print("[PDF->DOCX] Word not found in registry — skipping COM tier")
             return False
 
         import os
@@ -496,9 +496,9 @@ class PdfToWordMixin:
                 )
                 doc.SaveAs2(docx_path, FileFormat=16)
                 result["ok"] = True
-                print(f"[PDF→DOCX] Word COM success: {os.path.basename(pdf_path)}")
+                print(f"[PDF->DOCX] Word COM success: {os.path.basename(pdf_path)}")
             except Exception as e:
-                print(f"[PDF→DOCX] Word COM failed: {e}")
+                print(f"[PDF->DOCX] Word COM failed: {e}")
             finally:
                 if doc is not None:
                     try:
@@ -527,7 +527,7 @@ class PdfToWordMixin:
         stop_event.set()
 
         if t.is_alive():
-            print("[PDF→DOCX] Word COM timed out — falling back to pdf2docx")
+            print("[PDF->DOCX] Word COM timed out — falling back to pdf2docx")
             return False
 
         return result["ok"]
@@ -540,7 +540,7 @@ class PdfToWordMixin:
 
         soffice = resolve_binary("libreoffice")
         if not soffice:
-            print("[PDF→DOCX] LibreOffice not found — skipping tier")
+            print("[PDF->DOCX] LibreOffice not found — skipping tier")
             return False
 
         output_dir = os.path.dirname(docx_path)
@@ -565,29 +565,29 @@ class PdfToWordMixin:
             if os.path.exists(expected_docx):
                 if os.path.abspath(expected_docx) != os.path.abspath(docx_path):
                     os.replace(expected_docx, docx_path)
-                print(f"[PDF→DOCX] LibreOffice success: {docx_path}")
+                print(f"[PDF->DOCX] LibreOffice success: {docx_path}")
                 return True
-            print(f"[PDF→DOCX] LibreOffice failed: {result.stderr}")
+            print(f"[PDF->DOCX] LibreOffice failed: {result.stderr}")
             return False
         except subprocess.TimeoutExpired:
-            print("[PDF→DOCX] LibreOffice timed out")
+            print("[PDF->DOCX] LibreOffice timed out")
             return False
         except Exception as e:
-            print(f"[PDF→DOCX] LibreOffice error: {e}")
+            print(f"[PDF->DOCX] LibreOffice error: {e}")
             return False
 
     def _try_pdf2docx(self, pdf_path, docx_path):
         if Converter is None:
-            print("[PDF→DOCX] pdf2docx not available — skipping Tier 2")
+            print("[PDF->DOCX] pdf2docx not available — skipping Tier 2")
             return False
         try:
             cv = Converter(pdf_path)
             cv.convert(docx_path, start=0, end=None, parse_drawing=True)
             cv.close()
-            print(f"[PDF→DOCX] pdf2docx success: {Path(pdf_path).name}")
+            print(f"[PDF->DOCX] pdf2docx success: {Path(pdf_path).name}")
             return True
         except Exception as e:
-            print(f"[PDF→DOCX] pdf2docx failed: {e}")
+            print(f"[PDF->DOCX] pdf2docx failed: {e}")
             return False
 
     def _solid_fitz_fallback(self, pdf_path, docx_path):

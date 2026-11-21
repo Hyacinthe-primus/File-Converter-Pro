@@ -294,7 +294,7 @@ class BatchMixin:
                 return self._batch_to_png(fp, out, ext, backup_prepared=backup_prepared)
         except Exception as e:
             self._last_batch_error = f"Batch {target_format.upper()} conversion failed: {e}"
-            print(f"[BATCH] {Path(fp).name} → {target_format}: {e}")
+            print(f"[BATCH] {Path(fp).name} -> {target_format}: {e}")
             return False
         return self._batch_unsupported(ext, target_format)
 
@@ -553,7 +553,7 @@ class BatchMixin:
             return os.path.exists(out)
         except Exception as e:
             self._last_batch_error = f"Image to DOCX conversion failed: {e}"
-            print(f"[BATCH] image→docx {e}")
+            print(f"[BATCH] image->docx {e}")
             return False
 
     @staticmethod

@@ -422,7 +422,7 @@ class SystemNotifier:
         try:
             task_name = self._get_task_display_name(operation_type)
             message = self._translate_message(task_name)
-            print(f"[NOTIFIER] Sending notification: {operation_type} → '{message}'")
+            print(f"[NOTIFIER] Sending notification: {operation_type} -> '{message}'")
 
             self._bridge.notify_request.emit(
                 self.app_name,
@@ -462,7 +462,7 @@ class SystemNotifier:
                     print(f"[NOTIFIER] Up to date ({current})")
                 return False
 
-            print(f"[NOTIFIER] Update available: {current} → {latest}")
+            print(f"[NOTIFIER] Update available: {current} -> {latest}")
 
             release_url = "https://github.com/Hyacinthe-primus/File-Converter-Pro/releases/latest"
             title = "File Converter Pro - Update Available"

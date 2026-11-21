@@ -371,7 +371,7 @@ class WordToPdfMixin:
         try:
             doc = fitz.open(pdf_path)
         except Exception as e:
-            print(f"[Word→PDF] Post-process open failed: {e}")
+            print(f"[Word->PDF] Post-process open failed: {e}")
             return
 
         changed = False
@@ -393,7 +393,7 @@ class WordToPdfMixin:
                     doc = None
                     os.replace(tmp, pdf_path)
                 except Exception as e:
-                    print(f"[Word→PDF] Post-process save failed: {e}")
+                    print(f"[Word->PDF] Post-process save failed: {e}")
                     if os.path.exists(tmp):
                         try:
                             os.unlink(tmp)
@@ -431,10 +431,10 @@ class WordToPdfMixin:
             if (pdf_doc.metadata or {}) == meta:
                 return False
             pdf_doc.set_metadata(meta)
-            print(f"[Word→PDF] Metadata written: {meta}")
+            print(f"[Word->PDF] Metadata written: {meta}")
             return True
         except Exception as e:
-            print(f"[Word→PDF] Metadata skipped: {e}")
+            print(f"[Word->PDF] Metadata skipped: {e}")
             return False
 
     def _compress_pdf_images(self, pdf_doc, quality_label: str) -> bool:
@@ -460,7 +460,7 @@ class WordToPdfMixin:
                     gray=True,
                 )
             except Exception as e:
-                print(f"[Word→PDF] rewrite_images skipped: {e}")
+                print(f"[Word->PDF] rewrite_images skipped: {e}")
 
             changed = False
             for page in pdf_doc:
@@ -511,10 +511,10 @@ class WordToPdfMixin:
                     changed = True
 
             if changed:
-                print(f"[Word→PDF] Compressed images to max {target_dpi} DPI")
+                print(f"[Word->PDF] Compressed images to max {target_dpi} DPI")
             return changed
         except Exception as e:
-            print(f"[Word→PDF] Image compression skipped: {e}")
+            print(f"[Word->PDF] Image compression skipped: {e}")
             return False
 
     def _convert_docx_to_pdf_libreoffice(self, docx_path, pdf_path, progress_callback=None):
@@ -525,7 +525,7 @@ class WordToPdfMixin:
         soffice = resolve_binary("libreoffice")
 
         if not soffice:
-            print("[Word→PDF] LibreOffice not found")
+            print("[Word->PDF] LibreOffice not found")
             return False
 
         if progress_callback:
@@ -549,22 +549,22 @@ class WordToPdfMixin:
             if os.path.exists(expected_pdf):
                 if expected_pdf != pdf_path:
                     os.replace(expected_pdf, pdf_path)
-                print(f"[Word→PDF] LibreOffice success: {pdf_path}")
+                print(f"[Word->PDF] LibreOffice success: {pdf_path}")
                 return True
 
-            print(f"[Word→PDF] LibreOffice failed: {result.stderr}")
+            print(f"[Word->PDF] LibreOffice failed: {result.stderr}")
             return False
 
         except subprocess.TimeoutExpired:
-            print("[Word→PDF] LibreOffice timed out")
+            print("[Word->PDF] LibreOffice timed out")
             return False
         except Exception as e:
-            print(f"[Word→PDF] LibreOffice error: {e}")
+            print(f"[Word->PDF] LibreOffice error: {e}")
             return False
 
     def _convert_docx_to_pdf_fallback_reportlab(self, docx_path, pdf_path, options, progress_callback=None):
         if canvas is None:
-            print("[Word→PDF] ReportLab not available")
+            print("[Word->PDF] ReportLab not available")
             self.create_empty_pdf_with_message(pdf_path, "ReportLab not available")
             return False
 
@@ -737,11 +737,11 @@ class WordToPdfMixin:
             if not page_used:
                 c.showPage()
             c.save()
-            print(f"[Word→PDF] ReportLab fallback success: {pdf_path}")
+            print(f"[Word->PDF] ReportLab fallback success: {pdf_path}")
             return True
 
         except Exception as e:
-            print(f"[Word→PDF] ReportLab error: {e}")
+            print(f"[Word->PDF] ReportLab error: {e}")
             return False
 
     def _convert_docx_to_pdf_text_only_engine(self, docx_path, pdf_path):
@@ -921,7 +921,7 @@ class WordToPdfMixin:
             return True
 
         except Exception as e:
-            print(f"[Word→PDF] Simple error: {e}")
+            print(f"[Word->PDF] Simple error: {e}")
             return False
 
     def create_empty_pdf_with_message(self, pdf_path, message):

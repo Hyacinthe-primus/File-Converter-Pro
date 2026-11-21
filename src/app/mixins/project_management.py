@@ -483,7 +483,7 @@ class ProjectManagementMixin:
         )
 
         if file_path:
-            if not file_path.endswith(".fcproj"):
+            if not file_path.lower().endswith(".fcproj"):
                 file_path += ".fcproj"
             self._save_project_to(file_path)
 

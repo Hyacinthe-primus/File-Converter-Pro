@@ -142,7 +142,7 @@ class DocumentConverters:
             Path(dst).write_text(document, encoding="utf-8")
             return True
         except Exception as e:
-            print(f"[markdown→html] {e}")
+            print(f"[markdown->html] {e}")
             return False
 
     def _txt_to_pdf(self, src: str, dst: str) -> bool:
@@ -171,7 +171,7 @@ class DocumentConverters:
             c.save()
             return True
         except Exception as e:
-            print(f"[txt→pdf] {e}")
+            print(f"[txt->pdf] {e}")
             return False
 
     def _rtf_to_pdf(self, src: str, dst: str) -> bool:
@@ -181,7 +181,7 @@ class DocumentConverters:
             spans = self._rtf_to_spans(raw)
             return self._rtf_spans_to_pdf(spans, dst)
         except Exception as e:
-            print(f"[rtf→pdf] {e}")
+            print(f"[rtf->pdf] {e}")
             return False
 
     def _rtf_to_spans(self, raw: str) -> list:
@@ -364,7 +364,7 @@ class DocumentConverters:
             c.save()
             return True
         except Exception as e:
-            print(f"[rtf→pdf reportlab] {e}")
+            print(f"[rtf->pdf reportlab] {e}")
             return False
 
     def _txt_to_docx(self, src: str, dst: str) -> bool:
@@ -378,7 +378,7 @@ class DocumentConverters:
             doc.save(dst)
             return True
         except Exception as e:
-            print(f"[txt→docx] {e}")
+            print(f"[txt->docx] {e}")
             return False
 
     def _rtf_to_docx(self, src: str, dst: str) -> bool:
@@ -402,7 +402,7 @@ class DocumentConverters:
             doc.save(dst)
             return True
         except Exception as e:
-            print(f"[rtf→docx] {e}")
+            print(f"[rtf->docx] {e}")
             return False
 
     def _csv_to_json(self, src: str, dst: str) -> bool:
@@ -419,7 +419,7 @@ class DocumentConverters:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             return True
         except Exception as e:
-            print(f"[csv→json] {e}")
+            print(f"[csv->json] {e}")
             return False
 
     def _json_to_csv(self, src: str, dst: str) -> bool:
@@ -436,7 +436,7 @@ class DocumentConverters:
                 writer.writerows(data)
             return True
         except Exception as e:
-            print(f"[json→csv] {e}")
+            print(f"[json->csv] {e}")
             return False
 
     def _xlsx_to_pdf(self, src: str, dst: str) -> bool:
@@ -473,7 +473,7 @@ class DocumentConverters:
             wb.close()
             return True
         except Exception as e:
-            print(f"[xlsx→pdf] {e}")
+            print(f"[xlsx->pdf] {e}")
             return False
 
     def _xlsx_to_json(self, src: str, dst: str) -> bool:
@@ -493,7 +493,7 @@ class DocumentConverters:
                 json.dump(result, f, ensure_ascii=False, indent=2)
             return True
         except Exception as e:
-            print(f"[xlsx→json] {e}")
+            print(f"[xlsx->json] {e}")
             return False
 
     def _xlsx_to_csv(self, src: str, dst: str) -> bool:
@@ -509,7 +509,7 @@ class DocumentConverters:
             wb.close()
             return True
         except Exception as e:
-            print(f"[xlsx→csv] {e}")
+            print(f"[xlsx->csv] {e}")
             return False
 
     def _pptx_to_pdf(self, src: str, dst: str) -> bool:
@@ -534,7 +534,7 @@ class DocumentConverters:
             c.save()
             return True
         except Exception as e:
-            print(f"[pptx→pdf] {e}")
+            print(f"[pptx->pdf] {e}")
             return False
 
     def _soffice_convert(self, src: str, dst: str, out_format: str) -> bool:
@@ -581,7 +581,7 @@ class DocumentConverters:
             doc.save(dst)
             return True
         except Exception as e:
-            print(f"[odt→docx] {e}")
+            print(f"[odt->docx] {e}")
             return False
 
     def _ods_to_xlsx(self, src: str, dst: str) -> bool:
@@ -602,7 +602,7 @@ class DocumentConverters:
             wb.save(dst)
             return True
         except Exception as e:
-            print(f"[ods→xlsx] {e}")
+            print(f"[ods->xlsx] {e}")
             return False
 
     def _odp_to_pptx(self, src: str, dst: str) -> bool:
@@ -626,7 +626,7 @@ class DocumentConverters:
             prs.save(dst)
             return True
         except Exception as e:
-            print(f"[odp→pptx] {e}")
+            print(f"[odp->pptx] {e}")
             return False
 
     def _odt_to_pdf(self, src: str, dst: str) -> bool:

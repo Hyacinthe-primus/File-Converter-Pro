@@ -392,9 +392,15 @@ class PreviewDialog(TranslationMixin, QDialog):
         try:
             import csv
 
-            with open(self.file_path, "r", encoding="utf-8", errors="replace", newline="") as f:
-                reader = csv.reader(f)
-                rows = [r for _, r in zip(range(200), reader)]
+            def read_rows(encoding, errors="strict"):
+                with open(self.file_path, "r", encoding=encoding, errors=errors, newline="") as f:
+                    return [r for _, r in zip(range(200), csv.reader(f))]
+
+            # Excel writes "CSV UTF-8" with a BOM and plain "CSV" in the ANSI code page.
+            try:
+                rows = read_rows("utf-8-sig")
+            except UnicodeDecodeError:
+                rows = read_rows("cp1252", "replace")
 
             if not rows:
                 self._show_error(self.translate_text("empty_csv_file"))

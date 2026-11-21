@@ -498,7 +498,7 @@ def _pdf_to_docx_word_com(src_abs: str, out_abs: str) -> bool:
         word_available = True
     except (OSError, ImportError):
         word_available = False
-        print("[pdf→docx] Word not found in registry - skipping COM tier")
+        print("[pdf->docx] Word not found in registry - skipping COM tier")
 
     if not word_available:
         return False
@@ -579,9 +579,9 @@ def _pdf_to_docx_word_com(src_abs: str, out_abs: str) -> bool:
             )
             doc.SaveAs2(out_abs, FileFormat=16)
             result["ok"] = True
-            print(f"[pdf→docx] Word COM success: {Path(src_abs).name}")
+            print(f"[pdf->docx] Word COM success: {Path(src_abs).name}")
         except Exception as exc:
-            print(f"[pdf→docx] COM failed: {exc}")
+            print(f"[pdf->docx] COM failed: {exc}")
         finally:
             if doc is not None:
                 try:
@@ -859,4 +859,4 @@ def _solid_fitz_fallback(pdf_path, docx_path):
 
     pdf_doc.close()
     doc.save(docx_path)
-    print(f"[PDF→DOCX] solid fitz fallback done: {Path(docx_path).name}")
+    print(f"[PDF->DOCX] solid fitz fallback done: {Path(docx_path).name}")

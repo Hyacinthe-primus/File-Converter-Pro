@@ -1446,7 +1446,7 @@ class AchievementsManager(QDialog):
                 finally:
                     self._global_media_player = None
                     self._global_audio_output = None
-                    print("[DEBUG] 🔊 Player cleaned up after playback ended")
+                    print("[DEBUG] [SFX] Player cleaned up after playback ended")
 
             self._global_media_player.mediaStatusChanged.connect(
                 lambda status: cleanup_on_end() if status == QMediaPlayer.MediaStatus.EndOfMedia else None

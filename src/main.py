@@ -33,6 +33,15 @@ from rich.theme import Theme
 
 from utils import SRC_DIR
 
+# Redirection or a legacy console may not encode the banner and status icons.
+# Degrade unsupported characters instead of letting a print abort the CLI.
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(errors="replace")
+        except (ValueError, OSError):
+            pass
+
 _THEME = Theme(
     {
         "fcp.brand": "bold cyan",

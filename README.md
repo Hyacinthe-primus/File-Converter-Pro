@@ -9,6 +9,7 @@
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/Hyacinthe-primus/File-Converter-Pro/codeql.yml?branch=main&style=for-the-badge&label=CodeQL)](https://github.com/Hyacinthe-primus/File-Converter-Pro/actions/workflows/codeql.yml)
 [![Windows Release](https://img.shields.io/github/actions/workflow/status/Hyacinthe-primus/File-Converter-Pro/release-windows.yml?style=for-the-badge&label=Windows%20Release)](https://github.com/Hyacinthe-primus/File-Converter-Pro/actions/workflows/release-windows.yml)
 [![Platform](https://img.shields.io/badge/Windows%2010%2F11-0078D4?style=for-the-badge&logo=windows&logoColor=white)](#)
+[![Microsoft Store](https://img.shields.io/badge/Microsoft%20Store-Download-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)](https://apps.microsoft.com/detail/9NSV0DS5R6JH)
 [![PySide6](https://img.shields.io/badge/PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white)](#)
 [![License](https://img.shields.io/badge/license-GPLv3-blue?style=for-the-badge)](#license)
 [![Status](https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge)](#)
@@ -41,6 +42,7 @@ Core philosophy: **ship nothing until it runs perfectly on a clean machine, with
 ## Highlights
 
 - **All-in-one**: documents, images, audio, video, batch supported
+- **Microsoft Store**: one-click install with automatic updates
 - **100% offline & private**: no telemetry, no uploads, no internet required
 - **Statistics & achievements**: animated dashboard and SQLite-backed gamification
 - **Automation**: watch folders and scheduled tasks, runs as a background daemon
@@ -55,12 +57,15 @@ Core philosophy: **ship nothing until it runs perfectly on a clean machine, with
 
 | | Link |
 |---|---|
-| **Installer** *(recommended)* | [Latest Release](../../releases/latest) → `FileConverterPro_Setup_v1.0.8.exe` |
+| **Microsoft Store** *(easiest)* | [File Converter Pro (Prime Enterprises)](https://apps.microsoft.com/detail/9NSV0DS5R6JH) — installs and updates automatically |
+| **Installer** *(full features)* | [Latest Release](../../releases/latest) → `FileConverterPro_Setup_v1.0.8.exe` |
 | **Portable** | [Latest Release](../../releases/latest) → `File_Converter_Pro_v1.0.8.zip` |
 | **Official Website** | [file-converter-pro](https://file-converter-pro.org/) |
 | **Itch** | [hyacinthe-primus.itch.io/file-converter-pro](https://hyacinthe-primus.itch.io/file-converter-pro) |
 
-Windows 10 / 11 (64-bit). No Python, no dependencies. Just run the installer.
+Windows 10 / 11 (64-bit). No Python, no dependencies. Get it from the Microsoft Store or run the installer.
+
+> The Store version has no Explorer right-click entry, and watch folders run only while the app is open. The installer version includes both.
 
 > System requirements, antivirus notes, and PowerShell one-liners are in the **[Wiki](https://github.com/Hyacinthe-primus/File-Converter-Pro/wiki)**.
 

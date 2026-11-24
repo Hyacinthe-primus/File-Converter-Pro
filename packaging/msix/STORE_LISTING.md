@@ -1,11 +1,13 @@
-# Microsoft Store listing (draft)
+# Microsoft Store listing
+
+Published: https://apps.microsoft.com/detail/9NSV0DS5R6JH
 
 Copy for the Partner Center submission. Keep it in sync with what the MSIX
 package actually does: the Store certifies the listing, not just the binary.
 
 ## Product name
 
-File Converter Pro
+File Converter Pro (Prime Enterprises)
 
 ## Short description
 

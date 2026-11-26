@@ -159,7 +159,7 @@ foreach ($name in $localState) {
         Write-Ok "Removed local state: $name"
     }
 }
-foreach ($relative in @("automation", "_internal\automation", "config\external_binaries.conf", "_internal\config\external_binaries.conf")) {
+foreach ($relative in @("automation", "_internal\automation", "config\external_binaries.conf", "_internal\config\external_binaries.conf", "_internal\styles\custom_themes")) {
     $path = Join-Path $StageDir $relative
     if (Test-Path -LiteralPath $path) {
         Remove-Item -LiteralPath $path -Recurse -Force

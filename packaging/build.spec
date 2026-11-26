@@ -7,27 +7,45 @@ import os, sys, shutil, glob
 shutil.rmtree(os.path.join('dist', 'FCP'), ignore_errors=True)
 
 def collect_data_files():
+    filtered_datas = []
+
+    def add_tree(src_root, dest_root, skip_dirs=(), skip_files=()):
+        if not os.path.exists(src_root):
+            print(f"File not found (skipped): {src_root}")
+            return
+        for root, dirs, files in os.walk(src_root):
+            dirs[:] = [d for d in dirs if d not in skip_dirs]
+            for name in files:
+                if name in skip_files:
+                    continue
+                full = os.path.join(root, name)
+                rel_dir = os.path.relpath(root, src_root)
+                dest_dir = dest_root if rel_dir == '.' else os.path.join(dest_root, rel_dir)
+                filtered_datas.append((full, dest_dir))
+
+    # Built-in resources stay in the package.
     datas = [
         ('../src/Assets', 'Assets'),
         ('../src/legal', 'legal'),
-        ('../src/styles', 'styles'),
         ('../src/config', 'config'),
     ]
-
-    filtered_datas = []
     for src, dst in datas:
         if os.path.exists(src):
             filtered_datas.append((src, dst))
         else:
             print(f"File not found (skipped): {src}")
 
-    lang_excludes = {'blank.lang', 'en-revisited.lang'}
-    for f in glob.glob('../src/languages/*.lang'):
-        if os.path.basename(f) not in lang_excludes:
-            filtered_datas.append((f, 'languages'))
+    # Custom themes are installed by the user and must not be baked into the package.
+    add_tree('../src/styles', 'styles', skip_dirs={'custom_themes'})
 
-    for f in glob.glob('../src/languages/*.json'):
-        filtered_datas.append((f, 'languages'))
+    # Ship only bundled languages; locally installed .lang files are user data.
+    bundled_languages = {
+        'en.json', 'fr.json', 'it.lang', 'ru.lang', 'tr.lang', 'zh.lang', 'legacy_aliases.json',
+    }
+    for name in sorted(bundled_languages):
+        path = os.path.join('../src/languages', name)
+        if os.path.exists(path):
+            filtered_datas.append((path, 'languages'))
 
     try:
         import docx

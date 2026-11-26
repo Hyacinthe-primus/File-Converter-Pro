@@ -42,6 +42,24 @@ for _stream in (sys.stdout, sys.stderr):
         except (ValueError, OSError):
             pass
 
+
+def _log_unhandled_exception(exc_type, exc_value, exc_tb) -> None:
+    """Write startup/slot failures to the data folder before the default hook."""
+    try:
+        import traceback
+
+        from app_paths import ensure_data_dir
+
+        with open(ensure_data_dir() / "startup-error.log", "a", encoding="utf-8") as log:
+            log.write(f"\n{datetime.now().isoformat()}\n")
+            traceback.print_exception(exc_type, exc_value, exc_tb, file=log)
+    except Exception:
+        pass
+    sys.__excepthook__(exc_type, exc_value, exc_tb)
+
+
+sys.excepthook = _log_unhandled_exception
+
 _THEME = Theme(
     {
         "fcp.brand": "bold cyan",

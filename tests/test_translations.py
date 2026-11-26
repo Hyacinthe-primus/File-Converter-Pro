@@ -76,6 +76,42 @@ def test_get_available_languages():
     assert "en" in codes
 
 
+def test_bundled_language_is_not_removable():
+    """Languages shipped with the app must not be deletable."""
+    from translations import TranslationManager
+
+    tm = TranslationManager()
+    ok, _ = tm.remove_lang_file("it")
+    assert ok is False
+
+
+def test_custom_language_install_uses_data_dir(tmp_path, monkeypatch):
+    """Imported .lang files go to the writable data folder and can be removed."""
+    import json
+
+    import translations
+
+    custom_dir = tmp_path / "custom-languages"
+    monkeypatch.setattr(translations, "_CUSTOM_LANGUAGES_DIR", str(custom_dir))
+    src = tmp_path / "xx.lang"
+    src.write_text(
+        json.dumps({"meta": {"code": "xx", "name": "Test"}, "strings": {"hello": "Hi"}}),
+        encoding="utf-8",
+    )
+
+    tm = translations.TranslationManager()
+    ok, name = tm.load_lang_file(str(src))
+
+    assert ok is True
+    assert name == "Test"
+    assert (custom_dir / "xx.lang").is_file()
+    assert tm._external_meta["xx"]["custom"] is True
+
+    ok, _ = tm.remove_lang_file("xx")
+    assert ok is True
+    assert not (custom_dir / "xx.lang").exists()
+
+
 def test_translate_operation_type():
     """translate_operation_type should map keys to readable names."""
     from translations import TranslationManager

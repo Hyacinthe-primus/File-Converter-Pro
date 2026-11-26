@@ -7,7 +7,6 @@ import math
 import os
 import random
 import sqlite3
-import sys
 from datetime import date
 from pathlib import Path
 from typing import List, Optional, Tuple
@@ -1123,13 +1122,9 @@ class SpecialEventsManager:
             QTimer.singleShot(5000, self._check_and_prompt)
 
     def _get_db_path(self) -> str:
-        from utils import SRC_DIR
-        base = (
-            os.path.dirname(sys.executable)
-            if getattr(sys, "frozen", False)
-            else str(SRC_DIR)
-        )
-        return os.path.join(base, "special_events.db")
+        from app_paths import ensure_data_dir
+
+        return os.path.join(str(ensure_data_dir()), "special_events.db")
 
     def _init_db(self):
         with sqlite3.connect(self.db_path) as conn:

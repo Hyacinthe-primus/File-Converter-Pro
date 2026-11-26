@@ -10,7 +10,8 @@ Key Features:
     - Technical operation type translation (e.g., 'pdf_to_word' -> 'PDF to Word')
     - External .lang file support: users can create community translations
       and import them through Settings -> Language tab.
-    - .lang files are stored in the  languages/  sub-folder next to the app.
+    - .lang files are bundled in the app's languages/ folder; user-installed
+      languages are stored in the writable data folder.
     - On startup all .lang files in that folder are loaded automatically.
 
 Classes:
@@ -31,6 +32,7 @@ import os
 import shutil
 import sys
 
+from app_paths import get_data_dir
 from utils import SRC_DIR
 
 
@@ -43,6 +45,17 @@ def _get_languages_dir():
 
 
 _LANGUAGES_DIR = _get_languages_dir()
+_CUSTOM_LANGUAGES_DIR = str(get_data_dir() / "languages")
+
+
+def _is_custom_language_file(filepath: str) -> bool:
+    """True when *filepath* is inside the writable custom-languages folder."""
+    custom_root = os.path.normcase(os.path.abspath(_CUSTOM_LANGUAGES_DIR))
+    bundled_root = os.path.normcase(os.path.abspath(_LANGUAGES_DIR))
+    if custom_root == bundled_root:
+        # Development mode uses src/languages for both; treat those as bundled.
+        return False
+    return os.path.normcase(os.path.dirname(os.path.abspath(filepath))) == custom_root
 
 
 def _load_legacy_aliases() -> dict:
@@ -135,7 +148,8 @@ class TranslationManager:
                 {
                     "code": code,
                     "name": meta.get("name", code),
-                    "builtin": False,
+                    "builtin": not meta.get("custom", False),
+                    "removable": bool(meta.get("custom", False)),
                     "author": meta.get("author", ""),
                     "version": meta.get("version", ""),
                     "description": meta.get("description", ""),
@@ -145,21 +159,25 @@ class TranslationManager:
         return result
 
     def _autoload_lang_files(self) -> None:
-        if not os.path.isdir(_LANGUAGES_DIR):
-            return
-        for fname in os.listdir(_LANGUAGES_DIR):
-            if fname.endswith(".lang"):
-                path = os.path.join(_LANGUAGES_DIR, fname)
-                try:
-                    self._load_lang_file_internal(path)
-                except Exception as e:
-                    print(f"[TranslationManager] Could not load {fname}: {e}")
+        # Bundled languages first, then user-installed ones, so a custom file
+        # with the same language code can override a bundled translation.
+        for directory in (_LANGUAGES_DIR, _CUSTOM_LANGUAGES_DIR):
+            if not os.path.isdir(directory):
+                continue
+            for fname in os.listdir(directory):
+                if fname.endswith(".lang"):
+                    path = os.path.join(directory, fname)
+                    try:
+                        self._load_lang_file_internal(path)
+                    except Exception as e:
+                        print(f"[TranslationManager] Could not load {fname}: {e}")
 
     def load_lang_file(self, filepath: str) -> tuple:
         if not os.path.isfile(filepath):
             return False, "File not found."
-        dest = os.path.join(_LANGUAGES_DIR, os.path.basename(filepath))
+        dest = os.path.join(_CUSTOM_LANGUAGES_DIR, os.path.basename(filepath))
         try:
+            os.makedirs(_CUSTOM_LANGUAGES_DIR, exist_ok=True)
             shutil.copy2(filepath, dest)
         except Exception as e:
             return False, f"Cannot save to languages folder: {e}"
@@ -192,15 +210,17 @@ class TranslationManager:
         self.translations[code].update(strings)
 
         meta["file"] = filepath
+        meta["custom"] = _is_custom_language_file(filepath)
         self._external_meta[code] = meta
 
     def remove_lang_file(self, code: str) -> tuple:
         if code in ("fr", "en"):
             return False, "Cannot remove a built-in language."
-        if code not in self._external_meta:
-            return False, f"Language '{code}' is not loaded."
+        meta = self._external_meta.get(code)
+        if not meta or not meta.get("custom"):
+            return False, "Cannot remove a bundled language."
 
-        filepath = self._external_meta[code].get("file", "")
+        filepath = meta.get("file", "")
         if filepath and os.path.isfile(filepath):
             try:
                 os.remove(filepath)

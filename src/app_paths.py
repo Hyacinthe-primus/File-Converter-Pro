@@ -33,9 +33,12 @@ _LEGACY_FILES: tuple[str, ...] = (
     "achievements.db",
     "achievements.db-wal",
     "achievements.db-shm",
+    "special_events.db",
+    "special_events.db-wal",
+    "special_events.db-shm",
 )
 
-_LEGACY_DIRS: tuple[str, ...] = ("automation",)
+_LEGACY_DIRS: tuple[str, ...] = ("automation", "styles/custom_themes")
 
 _migrated = False
 
@@ -146,9 +149,12 @@ def migrate_legacy_data() -> list[str]:
             legacy_dir = legacy / name
             if not legacy_dir.is_dir():
                 continue
-            for item in sorted(legacy_dir.iterdir()):
-                if item.is_file() and _copy_missing(item, target / name / item.name):
-                    migrated.append(f"{name}/{item.name}")
+            for item in sorted(legacy_dir.rglob("*")):
+                if not item.is_file():
+                    continue
+                relative = item.relative_to(legacy_dir)
+                if _copy_missing(item, target / name / relative):
+                    migrated.append(f"{name}/{relative.as_posix()}")
 
     return migrated
 

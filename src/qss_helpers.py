@@ -15,6 +15,7 @@ Expected structure:
 import os
 import re
 
+from app_paths import get_data_dir
 from utils import SRC_DIR, resource_path
 
 _ROOT_DIR = str(SRC_DIR)
@@ -22,7 +23,7 @@ _ROOT_DIR = str(SRC_DIR)
 __all__ = ["_load_qss", "_apply_dialog_btn", "_dialog_buttons_qss", "_ROOT_DIR"]
 
 _THEMES_DIR = resource_path(os.path.join("styles", "themes"))
-_CUSTOM_THEMES_DIR = resource_path(os.path.join("styles", "custom_themes"))
+_CUSTOM_THEMES_DIR = str(get_data_dir() / "styles" / "custom_themes")
 
 
 def _load_qss(filename: str, theme: str | None = None) -> str:

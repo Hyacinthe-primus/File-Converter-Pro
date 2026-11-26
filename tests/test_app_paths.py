@@ -60,6 +60,14 @@ def test_is_packaged_false_in_development(monkeypatch):
     assert app_paths.is_packaged() is False
 
 
+def test_special_events_db_uses_data_dir(monkeypatch, tmp_path):
+    import special_events_manager as sem
+
+    monkeypatch.setattr(app_paths, "ensure_data_dir", lambda: tmp_path)
+
+    assert sem.SpecialEventsManager._get_db_path(object()) == str(tmp_path / "special_events.db")
+
+
 def _fake_frozen_app(monkeypatch, tmp_path):
     """Point the app at a fake install dir and a fake per-user data root."""
     app_dir = tmp_path / "app"
@@ -78,8 +86,11 @@ def _fake_frozen_app(monkeypatch, tmp_path):
 def test_migrate_copies_legacy_files(monkeypatch, tmp_path):
     app_dir, data_dir = _fake_frozen_app(monkeypatch, tmp_path)
     (app_dir / "file_converter_config.dat").write_bytes(b"encrypted")
+    (app_dir / "special_events.db").write_bytes(b"events")
     (app_dir / "automation").mkdir()
     (app_dir / "automation" / "watch.toml").write_text("[watch_folders]\n", encoding="utf-8")
+    (app_dir / "styles" / "custom_themes" / "MyTheme").mkdir(parents=True)
+    (app_dir / "styles" / "custom_themes" / "MyTheme" / "style.qss").write_text("QWidget {}\n", encoding="utf-8")
 
     internal = app_dir / "_internal"
     internal.mkdir()
@@ -92,11 +103,14 @@ def test_migrate_copies_legacy_files(monkeypatch, tmp_path):
     assert set(migrated) == {
         "file_converter_config.dat",
         "file_converter_stats.db",
+        "special_events.db",
         "automation/watch.toml",
+        "styles/custom_themes/MyTheme/style.qss",
     }
     assert (data_dir / "file_converter_config.dat").read_bytes() == b"encrypted"
     assert (data_dir / "file_converter_stats.db").read_bytes() == b"sqlite"
     assert (data_dir / "automation" / "watch.toml").is_file()
+    assert (data_dir / "styles" / "custom_themes" / "MyTheme" / "style.qss").is_file()
     # Originals are never deleted.
     assert (app_dir / "file_converter_config.dat").is_file()
     assert (app_dir / "automation" / "watch.toml").is_file()

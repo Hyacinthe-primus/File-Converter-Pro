@@ -5,11 +5,12 @@ import zipfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from app_paths import get_data_dir
 from utils import SRC_DIR
 
 ROOT_DIR = SRC_DIR
 THEMES_DIR = ROOT_DIR / "styles" / "themes"
-CUSTOM_THEMES_DIR = ROOT_DIR / "styles" / "custom_themes"
+CUSTOM_THEMES_DIR = get_data_dir() / "styles" / "custom_themes"
 
 REQUIRED_FILES = {
     "style.qss",

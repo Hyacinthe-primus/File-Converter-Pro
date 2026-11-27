@@ -44,17 +44,29 @@ def register_heif() -> None:
         pass
 
 
+def _needs_exif_transpose(path: str) -> bool:
+    """True when the EXIF Orientation tag says the stored pixels must be rotated or flipped."""
+    try:
+        from PIL import Image
+
+        with Image.open(path) as img:
+            return img.getexif().get(0x0112, 1) not in (0, 1)
+    except Exception:
+        return False
+
+
 @contextlib.contextmanager
 def decodable_image_path(path: str) -> Iterator[str]:
     """Yield a path that PyMuPDF, Pillow and the OCR engine can all read.
 
     Regular images are passed through untouched. HEIC/HEIF/AVIF files (by
     content or by extension, so misnamed ones too) are converted to a temporary
-    PNG that is deleted when the block exits. If the conversion fails the
+    PNG, and photos whose EXIF orientation is not upright to an upright copy;
+    the temporary file is deleted when the block exits. If the conversion fails the
     original path is yielded, so the caller reports its usual error.
     """
     ext = sniff_image_ext(path, Path(path).suffix.lower())
-    if ext not in _CONVERT_EXTS:
+    if ext not in _CONVERT_EXTS and not _needs_exif_transpose(path):
         yield path
         return
 
@@ -64,12 +76,20 @@ def decodable_image_path(path: str) -> Iterator[str]:
 
         register_heif()
         with Image.open(path) as img:
+            is_jpeg = img.format == "JPEG"
+            # Keep DPI and colour profile, or the PDF page changes size and colour
+            save_info = {k: img.info[k] for k in ("dpi", "icc_profile") if img.info.get(k)}
             img = ImageOps.exif_transpose(img)
             has_alpha = "A" in img.getbands() or "transparency" in img.info
             img = img.convert("RGBA" if has_alpha else "RGB")
-            fd, tmp_path = tempfile.mkstemp(prefix="fcp_img_", suffix=".png")
+            # A rotated phone photo stays a JPEG; as PNG it would be several times larger
+            suffix = ".jpg" if is_jpeg and not has_alpha else ".png"
+            fd, tmp_path = tempfile.mkstemp(prefix="fcp_img_", suffix=suffix)
             os.close(fd)
-            img.save(tmp_path, format="PNG")
+            if suffix == ".jpg":
+                img.save(tmp_path, format="JPEG", quality=95, **save_info)
+            else:
+                img.save(tmp_path, format="PNG", **save_info)
     except Exception as e:
         print(f"[IMAGE] Could not convert {path} to a readable format: {e}")
         if tmp_path and os.path.exists(tmp_path):

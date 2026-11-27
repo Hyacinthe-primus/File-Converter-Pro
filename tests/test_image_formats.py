@@ -88,6 +88,36 @@ class TestImageToPdfPipeline:
         assert len(doc) == 1
         doc.close()
 
+    def test_rotated_phone_photo_is_embedded_upright(self, tmp_path):
+        import fitz
+
+        from context_menu.conversion_helpers import _embed_images_in_pdf
+
+        # Stored landscape with EXIF Orientation 6, as phones write portrait shots
+        src = tmp_path / "portrait.jpg"
+        exif = Image.Exif()
+        exif[0x0112] = 6
+        Image.new("RGB", (400, 200), (255, 255, 255)).save(src, format="JPEG", exif=exif, dpi=(72, 72))
+
+        out = str(tmp_path / "out.pdf")
+        _embed_images_in_pdf([str(src)], out)
+        page = fitz.open(out)[0]
+        info = page.get_image_info()[0]
+        # Upright, filling the page, and the same size an upright 72 dpi photo gets
+        assert page.rect == fitz.Rect(0, 0, 200, 400)
+        assert fitz.Rect(info["bbox"]) == page.rect
+
+    def test_main_window_opens_rotated_phone_photo_upright(self, tmp_path):
+        from app.mixins.image_to_pdf import ImageToPdfMixin
+
+        src = tmp_path / "portrait.jpg"
+        exif = Image.Exif()
+        exif[0x0112] = 6
+        Image.new("RGB", (400, 200), (255, 255, 255)).save(src, format="JPEG", exif=exif)
+
+        img = ImageToPdfMixin._open_image_for_pdf(None, str(src))
+        assert img.size == (200, 400)
+
     def test_open_image_for_pdf_handles_heic_named_png(self, heic_named_png):
         from app.mixins.image_to_pdf import ImageToPdfMixin
 

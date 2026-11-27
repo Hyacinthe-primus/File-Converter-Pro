@@ -632,5 +632,8 @@ class ImageToPdfMixin:
                 png = doc[0].get_pixmap(alpha=True).tobytes("png")
             return Image.open(io.BytesIO(png))
 
+        from PIL import ImageOps
+
         register_heif()  # Pillow reads by content, so this also covers HEIC saved as .png
-        return Image.open(file_path)
+        # Phones store portrait photos as landscape pixels plus an EXIF orientation
+        return ImageOps.exif_transpose(Image.open(file_path))

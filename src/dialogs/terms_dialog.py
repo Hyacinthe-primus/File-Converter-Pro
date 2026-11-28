@@ -74,10 +74,10 @@ class TermsAndPrivacyDialog(TranslationMixin, QDialog):
         super().closeEvent(event)
 
     def get_icon_path(self):
-        """Find icon.ico robustly (dev + PyInstaller)"""
+        """Find icon_DEV.ico robustly (dev + PyInstaller)"""
         from utils import get_icon_path
 
-        return get_icon_path("icon.ico")
+        return get_icon_path("icon_DEV.ico")
 
     def get_legal_files_path(self):
         """Find the legal folder robustly (dev + PyInstaller)"""

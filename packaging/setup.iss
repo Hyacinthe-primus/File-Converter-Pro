@@ -29,8 +29,8 @@ DefaultDirName={autopf}\FCP
 DefaultGroupName={#MyAppName}
 OutputDir=..\Output
 OutputBaseFilename=FileConverterPro_Setup_v{#MyAppVersion}
-SetupIconFile=..\src\Assets\icon.ico
-UninstallDisplayIcon={app}\icon.ico
+SetupIconFile=..\src\Assets\icon_DEV.ico
+UninstallDisplayIcon={app}\icon_DEV.ico
 WizardStyle=modern
 WizardSmallImageFile=installer_banner.png
 Compression=lzma2/ultra64
@@ -142,7 +142,7 @@ Name: "contextmenu";   Description: "{cm:AddContextMenu}";        GroupDescripti
 
 [Files]
 ; Uninstallation icon
-Source: "..\src\Assets\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\Assets\icon_DEV.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#MyDistDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyDistDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#MyAppExeName}"
@@ -152,15 +152,15 @@ Source: "..\src\LICENSE\LICENSE.txt";    DestDir: "{app}"; Flags: ignoreversion;
 Source: "..\src\LICENSE\LICENSE_FR.txt"; DestDir: "{app}"; Flags: ignoreversion; Check: IsFrench()
 
 [Icons]
-Name: "{group}\{#MyAppName}";                          Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Comment: "{cm:AppDescription}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}";    Filename: "{uninstallexe}";        IconFilename: "{app}\icon.ico"
-Name: "{autodesktop}\{#MyAppName}";                    Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Comment: "{cm:AppDescription}"; Tasks: desktopicon
+Name: "{group}\{#MyAppName}";                          Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon_DEV.ico"; Comment: "{cm:AppDescription}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}";    Filename: "{uninstallexe}";        IconFilename: "{app}\icon_DEV.ico"
+Name: "{autodesktop}\{#MyAppName}";                    Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon_DEV.ico"; Comment: "{cm:AppDescription}"; Tasks: desktopicon
 
 [Registry]
 ; Association extension .fcproj
 Root: HKCU; Subkey: "Software\Classes\.fcproj";                                          ValueType: string; ValueName: ""; ValueData: "FileConverterPro.Project";     Flags: uninsdeletevalue;  Tasks: assocfileext
 Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project";                         ValueType: string; ValueName: ""; ValueData: "File Converter Pro Project";   Flags: uninsdeletekey;    Tasks: assocfileext
-Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\DefaultIcon";             ValueType: string; ValueName: ""; ValueData: "{app}\icon.ico,0";             Tasks: assocfileext
+Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\DefaultIcon";             ValueType: string; ValueName: ""; ValueData: "{app}\icon_DEV.ico,0";             Tasks: assocfileext
 Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\shell\open\command";      ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: assocfileext
 Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\shell\open";              ValueType: string; ValueName: "WorkingDirectory"; ValueData: "{app}";        Tasks: assocfileext
 
@@ -364,7 +364,7 @@ begin
   ShellKey := SubKey + '\shell\' + Num;
   ExePath := ExpandConstant('{app}\{#MyAppExeName}');
   RegWriteStringValue(HKCU, ShellKey, 'MUIVerb', MenuLabel);
-  RegWriteStringValue(HKCU, ShellKey, 'Icon', ExpandConstant('{app}\icon.ico,0'));
+  RegWriteStringValue(HKCU, ShellKey, 'Icon', ExpandConstant('{app}\icon_DEV.ico,0'));
   RegWriteStringValue(HKCU, ShellKey + '\command', '', '"' + ExePath + '" --context-menu --files "%1" --conversion-type ' + ConvType);
 end;
 
@@ -375,7 +375,7 @@ begin
   CM := 'Software\Classes\SystemFileAssociations';
   SubKey := CM + '\.' + Ext + '\shell\ConvertWithFCP';
   RegWriteStringValue(HKCU, SubKey, 'MUIVerb', ExpandConstant('{cm:ConvertWithFCP}'));
-  RegWriteStringValue(HKCU, SubKey, 'Icon', ExpandConstant('{app}\icon.ico,0'));
+  RegWriteStringValue(HKCU, SubKey, 'Icon', ExpandConstant('{app}\icon_DEV.ico,0'));
   RegWriteStringValue(HKCU, SubKey, 'SubCommands', '');
 
   if Ext = 'aac' then begin

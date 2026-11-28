@@ -338,10 +338,10 @@ exe = EXE(
     upx=True,
     upx_exclude=UPX_EXCLUDE,
     runtime_tmpdir=None,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    icon='../src/Assets/icon.ico',
+    icon='../src/Assets/icon_DEV.ico',
     version='version_info.txt',
     manifest='manifest.xml',
 )

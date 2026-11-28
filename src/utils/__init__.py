@@ -3,7 +3,7 @@ Shared utility functions for File Converter Pro.
 
 Provides centralized implementations for:
     - resource_path()  : resolve paths for dev mode and PyInstaller
-    - get_icon_path()  : locate icon.ico robustly
+    - get_icon_path()  : locate icon_DEV.ico robustly
     - make_tm()        : create a TranslationManager for a given language
 """
 
@@ -34,7 +34,7 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(base, relative_path)
 
 
-def get_icon_path(icon_name: str = "icon.ico") -> str:
+def get_icon_path(icon_name: str = "icon_DEV.ico") -> str:
     """Locate an icon file robustly (dev + PyInstaller).
 
     Search order:

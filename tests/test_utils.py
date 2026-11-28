@@ -11,12 +11,12 @@ def test_resource_path():
 
 
 def test_get_icon_path():
-    """get_icon_path should return a string path."""
+    """get_icon_path should return the dev-channel icon path."""
     from utils import get_icon_path
 
     result = get_icon_path()
     assert isinstance(result, str)
-    assert "icon.ico" in result
+    assert result.endswith("icon_DEV.ico")
 
 
 def test_make_tm():

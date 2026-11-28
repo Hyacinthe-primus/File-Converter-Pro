@@ -524,10 +524,10 @@ class AppBootstrap:
     """Creates the QApplication and loads initial configuration."""
 
     _ICON_CANDIDATES = [
-        lambda: os.path.join(str(SRC_DIR), "Assets", "icon.ico"),
-        lambda: "icon.ico",
-        lambda: os.path.join(os.getcwd(), "icon.ico"),
-        lambda: os.path.join(getattr(sys, "_MEIPASS", ""), "icon.ico"),
+        lambda: os.path.join(str(SRC_DIR), "Assets", "icon_DEV.ico"),
+        lambda: "icon_DEV.ico",
+        lambda: os.path.join(os.getcwd(), "icon_DEV.ico"),
+        lambda: os.path.join(getattr(sys, "_MEIPASS", ""), "icon_DEV.ico"),
     ]
 
     def __init__(self, forced_language: str | None = None, forced_theme: str | None = None) -> None:
@@ -554,7 +554,7 @@ class AppBootstrap:
             app.setWindowIcon(icon)
             QApplication.setWindowIcon(icon)
         else:
-            _fcp_warn("icon.ico not found — using system default.")
+            _fcp_warn("icon_DEV.ico not found — using system default.")
 
         return app
 
@@ -585,7 +585,7 @@ class AppBootstrap:
     def _resolve_icon(cls) -> str | None:
         from utils import get_icon_path
 
-        path = get_icon_path("icon.ico")
+        path = get_icon_path("icon_DEV.ico")
         return path if path and os.path.exists(path) else None
 
 

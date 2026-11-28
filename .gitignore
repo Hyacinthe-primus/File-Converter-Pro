@@ -30,7 +30,6 @@ __pycache__/
 
 # Build-channel icons (kept local)
 src/Assets/icon_CAN.png
-src/Assets/icon_DEV.png
 src/Assets/icon_PRE.png
 
 # Automatically generated reports

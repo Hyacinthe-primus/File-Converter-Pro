@@ -23,10 +23,10 @@ class ModernSplashScreen(TranslationMixin, QWidget):
         self.setWindowTitle(self.translate_text("file_converter_pro_professional_file_converter"))
 
     def get_icon_path(self):
-        """Find icon.ico robustly (dev + PyInstaller)"""
+        """Find icon_DEV.ico robustly (dev + PyInstaller)"""
         from utils import get_icon_path
 
-        return get_icon_path("icon.ico")
+        return get_icon_path("icon_DEV.ico")
 
     def setup_ui(self):
         layout = QVBoxLayout()

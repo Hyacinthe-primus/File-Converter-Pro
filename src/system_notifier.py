@@ -167,7 +167,7 @@ class QtNotifier:
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray = QSystemTrayIcon()
             from utils import resource_path
-            self.tray.setIcon(QIcon(resource_path(os.path.join("Assets", "icon.png"))))
+            self.tray.setIcon(QIcon(resource_path(os.path.join("Assets", "icon_DEV.png"))))
             self.tray.show()
         else:
             print("[NOTIFIER] No system tray available — desktop notifications disabled")
@@ -245,7 +245,7 @@ class SystemNotifier:
         self.app_name = "File Converter Pro"
         self.app_id = "FileConverterPro.SystemNotifier"
 
-        self.icon_path = self._get_resource_path(os.path.join("Assets", "icon.png"))
+        self.icon_path = self._get_resource_path(os.path.join("Assets", "icon_DEV.png"))
         self.sound_path = self._get_resource_path(os.path.join("Assets", "SFX", "notif.mp3"))
         self.toast_icon_path = self.icon_path if os.path.exists(self.icon_path) else ""
 

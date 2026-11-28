@@ -967,7 +967,7 @@ class AppUIMixin(
         try:
             from utils import get_icon_path
 
-            icon_path = get_icon_path("icon.ico")
+            icon_path = get_icon_path("icon_DEV.ico")
 
             if icon_path and os.path.exists(icon_path):
                 self.setWindowIcon(QIcon(icon_path))

@@ -17,7 +17,7 @@ from pathlib import Path
 
 from utils import SRC_DIR
 
-APP_FOLDER_NAME = "FileConverterPro"
+APP_FOLDER_NAME = "FileConverterProDev"
 DATA_DIR_ENV = "FCP_DATA_DIR"
 
 # SQLite sidecar files travel with their database so WAL contents are not lost.

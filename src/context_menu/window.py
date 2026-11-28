@@ -86,7 +86,7 @@ def _collect_staged_files(conversion_type: str, single_file: str) -> list[str]:
     Windows spawns one process per selected file for context menu commands.
     """
     epoch = int(time.time() / _COLLECT_EPOCH_SEC)
-    key = f"fcp_{conversion_type}_{epoch}"
+    key = f"fcpdev_{conversion_type}_{epoch}"
     staging = os.path.join(tempfile.gettempdir(), f"{key}.txt")
     lock = os.path.join(tempfile.gettempdir(), f"{key}.lock")
 

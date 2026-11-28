@@ -41,7 +41,7 @@ def _donor_flag_path(config_dir: str | None = None) -> Path:
     import sys
 
     if hasattr(sys, "_MEIPASS"):
-        return Path(os.environ.get("APPDATA", Path.home())) / "FileConverterPro" / "donor_pending.json"
+        return Path(os.environ.get("APPDATA", Path.home())) / "FileConverterProDev" / "donor_pending.json"
     from utils import SRC_DIR
     return SRC_DIR / "donor_pending.json"
 

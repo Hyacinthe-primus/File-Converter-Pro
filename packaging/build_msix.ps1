@@ -30,9 +30,9 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Publisher,
 
-    [string]$PackageName = "PrimeEnterprises.FileConverterPro",
-    [string]$DisplayName = "File Converter Pro",
-    [string]$Description = "Convert documents, images, audio, video, archives and more.",
+    [string]$PackageName = "PrimeEnterprisesHyacinthe.FileConverterProDev",
+    [string]$DisplayName = "File Converter Pro (Dev)",
+    [string]$Description = "Development build of File Converter Pro.",
     [string]$PublisherDisplayName = "Prime Enterprises",
     [string]$Version = "",
     [ValidateSet("x64", "arm64", "x86")]
@@ -118,6 +118,9 @@ if ($Publisher -notmatch '^CN=') {
 if ($PackageName -notmatch '^[A-Za-z0-9.-]{3,50}$' -or $PackageName.EndsWith(".")) {
     throw "PackageName '$PackageName' is not a valid MSIX identity name."
 }
+if ($PackageName -eq "PrimeEnterprisesHyacinthe.FileConverterProPrimeEnt") {
+    throw "That is the Microsoft Store identity. Use the dev identity so the Store app stays installed."
+}
 if (-not (Test-Path -LiteralPath (Join-Path $SourceDir "FCP.exe"))) {
     throw "FCP.exe not found in '$SourceDir'. Run packaging\build.ps1 first."
 }
@@ -191,7 +194,7 @@ if ($invalid) {
 
 Write-Step "Rendering store logos"
 $assetsDir = Join-Path $StageDir "Assets"
-& python (Join-Path $PackagingDir "msix\make_assets.py") (Join-Path $RepoRoot "src\Assets\icon.ico") $assetsDir
+& python (Join-Path $PackagingDir "msix\make_assets.py") (Join-Path $RepoRoot "src\Assets\icon_DEV.ico") $assetsDir
 if ($LASTEXITCODE -ne 0) { throw "Asset generation failed." }
 
 Write-Step "Writing AppxManifest.xml"
@@ -215,7 +218,7 @@ Set-Content -LiteralPath (Join-Path $StageDir "AppxManifest.xml") -Value $manife
 
 # --- Pack ------------------------------------------------------------------
 
-$packagePath = Join-Path $OutputDir ("FileConverterPro_{0}_{1}.msix" -f $ResolvedVersion, $Architecture)
+$packagePath = Join-Path $OutputDir ("FileConverterPro_Dev_{0}_{1}.msix" -f $ResolvedVersion, $Architecture)
 if (Test-Path -LiteralPath $packagePath) { Remove-Item -LiteralPath $packagePath -Force }
 
 Write-Step "Packing MSIX"

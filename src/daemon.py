@@ -65,10 +65,10 @@ def set_autostart(enabled: bool, exe_path: str | None = None) -> None:
                 path = f'"{sys.executable}" --daemon'
             else:
                 path = f'"{sys.executable}" --daemon'
-            winreg.SetValueEx(key, "FileConverterProDaemon", 0, winreg.REG_SZ, path)
+            winreg.SetValueEx(key, "FileConverterProDaemonDev", 0, winreg.REG_SZ, path)
         else:
             try:
-                winreg.DeleteValue(key, "FileConverterProDaemon")
+                winreg.DeleteValue(key, "FileConverterProDaemonDev")
             except FileNotFoundError:
                 pass
         winreg.CloseKey(key)
@@ -85,7 +85,7 @@ def is_autostart_enabled() -> bool:
         import winreg
 
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run")
-        winreg.QueryValueEx(key, "FileConverterProDaemon")
+        winreg.QueryValueEx(key, "FileConverterProDaemonDev")
         winreg.CloseKey(key)
         return True
     except Exception:

@@ -93,9 +93,14 @@ if ($issContent -notmatch '#define MyAppVersion "([^"]+)"') {
     exit 1
 }
 $AppVersion = $matches[1]
+if ($issContent -match '#define MyAppVersionLabel "([^"]+)"') {
+    $AppVersionLabel = $matches[1]
+} else {
+    $AppVersionLabel = $AppVersion
+}
 
-$InstallerPath = Join-Path $OutputDir "FileConverterPro_Setup_v$AppVersion.exe"
-$ZipPath = Join-Path $OutputDir "File_Converter_Pro_v$AppVersion.zip"
+$InstallerPath = Join-Path $OutputDir "FileConverterPro_Dev_Setup_v$AppVersionLabel.exe"
+$ZipPath = Join-Path $OutputDir "File_Converter_Pro_Dev_v$AppVersionLabel.zip"
 $ChecksumsPath = Join-Path $OutputDir "checksums.txt"
 
 if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) {

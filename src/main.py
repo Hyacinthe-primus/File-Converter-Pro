@@ -155,7 +155,7 @@ from app import FadingMainWindow  # noqa: E402
 from config import ConfigManager, is_dark_mode_qt  # noqa: E402
 from dialogs import ModernSplashScreen, TermsAndPrivacyDialog  # noqa: E402
 
-SOCKET_NAME = "FileConverterPro_SingleInstance"
+SOCKET_NAME = "FileConverterProDev_SingleInstance"
 
 SPLASH_DELAY = 3000
 FADEIN_DELAY = 100

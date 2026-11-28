@@ -243,7 +243,7 @@ class SystemNotifier:
         self._tm = None
         self._fallback_tm = None
         self.app_name = "File Converter Pro"
-        self.app_id = "FileConverterPro.SystemNotifier"
+        self.app_id = "FileConverterProDev.SystemNotifier"
 
         self.icon_path = self._get_resource_path(os.path.join("Assets", "icon_DEV.png"))
         self.sound_path = self._get_resource_path(os.path.join("Assets", "SFX", "notif.mp3"))

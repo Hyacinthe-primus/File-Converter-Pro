@@ -5,13 +5,29 @@
 
 #define MyAppName "File Converter Pro"
 #define MyAppVersion "1.0.8"
-#define MyAppVersionLabel "1.0.8-dev"
-#define MyAppShortcutName "File Converter Pro (Dev)"
 #define MyAppPublisher "Prime Enterprises"
 #define MyAppURL "https://github.com/Hyacinthe-primus/File-Converter-Pro"
 #define MyAppExeName "FCP.exe"
-#define MyAppId "{{172548E0-545D-42D0-9912-65FDF79B4546}}"
 #define MyDistDir "dist\FCP"
+
+; Build channel: pass /DDEV=1 to ISCC for the development channel.
+#ifdef DEV
+  #define IsDev 1
+  #define MyAppVersionLabel MyAppVersion + "-dev"
+  #define MyAppShortcutName MyAppName + " (Dev)"
+  #define MyAppId "{{172548E0-545D-42D0-9912-65FDF79B4546}}"
+  #define MyDefaultDirName "{autopf}\FCP Dev"
+  #define MyOutputBaseFilename "FileConverterPro_Dev_Setup_v" + MyAppVersionLabel
+  #define MyIconFile "icon_DEV.ico"
+#else
+  #define IsDev 0
+  #define MyAppVersionLabel MyAppVersion
+  #define MyAppShortcutName MyAppName
+  #define MyAppId "{{C1E31023-8141-4243-96B2-D3AAC59CAC6F}}"
+  #define MyDefaultDirName "{autopf}\FCP"
+  #define MyOutputBaseFilename "FileConverterPro_Setup_v" + MyAppVersion
+  #define MyIconFile "icon.ico"
+#endif
 
 [Setup]
 AppId={#MyAppId}
@@ -27,12 +43,12 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\FCP Dev
+DefaultDirName={#MyDefaultDirName}
 DefaultGroupName={#MyAppShortcutName}
 OutputDir=..\Output
-OutputBaseFilename=FileConverterPro_Dev_Setup_v{#MyAppVersionLabel}
-SetupIconFile=..\src\Assets\icon_DEV.ico
-UninstallDisplayIcon={app}\icon_DEV.ico
+OutputBaseFilename={#MyOutputBaseFilename}
+SetupIconFile=..\src\Assets\{#MyIconFile}
+UninstallDisplayIcon={app}\{#MyIconFile}
 UninstallDisplayName={#MyAppShortcutName}
 WizardStyle=modern
 WizardSmallImageFile=installer_banner.png
@@ -140,10 +156,14 @@ turkish.Requires64Bit=Bu uygulama Windows 64-bit gerektirir.
 
 [Tasks]
 Name: "desktopicon";   Description: "{cm:CreateDesktopIcon}";    GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+#if IsDev == 0
+Name: "assocfileext";  Description: "{cm:AssocFileType}";         GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+Name: "contextmenu";   Description: "{cm:AddContextMenu}";        GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+#endif
 
 [Files]
 ; Uninstallation icon
-Source: "..\src\Assets\icon_DEV.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\Assets\{#MyIconFile}"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#MyDistDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyDistDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#MyAppExeName}"
@@ -153,15 +173,35 @@ Source: "..\src\LICENSE\LICENSE.txt";    DestDir: "{app}"; Flags: ignoreversion;
 Source: "..\src\LICENSE\LICENSE_FR.txt"; DestDir: "{app}"; Flags: ignoreversion; Check: IsFrench()
 
 [Icons]
-Name: "{group}\{#MyAppShortcutName}";                          Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon_DEV.ico"; Comment: "{cm:AppDescription}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppShortcutName}}";    Filename: "{uninstallexe}";        IconFilename: "{app}\icon_DEV.ico"
-Name: "{autodesktop}\{#MyAppShortcutName}";                    Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon_DEV.ico"; Comment: "{cm:AppDescription}"; Tasks: desktopicon
+Name: "{group}\{#MyAppShortcutName}";                          Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyIconFile}"; Comment: "{cm:AppDescription}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppShortcutName}}";    Filename: "{uninstallexe}";        IconFilename: "{app}\{#MyIconFile}"
+Name: "{autodesktop}\{#MyAppShortcutName}";                    Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyIconFile}"; Comment: "{cm:AppDescription}"; Tasks: desktopicon
+
+#if IsDev == 0
+[Registry]
+; Association extension .fcproj
+Root: HKCU; Subkey: "Software\Classes\.fcproj";                                          ValueType: string; ValueName: ""; ValueData: "FileConverterPro.Project";     Flags: uninsdeletevalue;  Tasks: assocfileext
+Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project";                         ValueType: string; ValueName: ""; ValueData: "File Converter Pro Project";   Flags: uninsdeletekey;    Tasks: assocfileext
+Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\DefaultIcon";             ValueType: string; ValueName: ""; ValueData: "{app}\icon.ico,0";             Tasks: assocfileext
+Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\shell\open\command";      ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: assocfileext
+Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\shell\open";              ValueType: string; ValueName: "WorkingDirectory"; ValueData: "{app}";        Tasks: assocfileext
+
+#endif
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--lang {code:GetLangCode}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--lang {code:GetLangCode}"; Description: "{cm:LaunchProgram,{#MyAppShortcutName}}"; Flags: nowait postinstall skipifsilent
+
+#if IsDev == 0
+[Dirs]
+Name: "{localappdata}\{#MyAppName}"
+
+#endif
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
+#if IsDev == 0
+Type: filesandordirs; Name: "{localappdata}\{#MyAppName}"
+#endif
 
 [Code]
 var
@@ -353,7 +393,7 @@ begin
   ShellKey := SubKey + '\shell\' + Num;
   ExePath := ExpandConstant('{app}\{#MyAppExeName}');
   RegWriteStringValue(HKCU, ShellKey, 'MUIVerb', MenuLabel);
-  RegWriteStringValue(HKCU, ShellKey, 'Icon', ExpandConstant('{app}\icon_DEV.ico,0'));
+  RegWriteStringValue(HKCU, ShellKey, 'Icon', ExpandConstant('{app}\icon.ico,0'));
   RegWriteStringValue(HKCU, ShellKey + '\command', '', '"' + ExePath + '" --context-menu --files "%1" --conversion-type ' + ConvType);
 end;
 
@@ -364,7 +404,7 @@ begin
   CM := 'Software\Classes\SystemFileAssociations';
   SubKey := CM + '\.' + Ext + '\shell\ConvertWithFCP';
   RegWriteStringValue(HKCU, SubKey, 'MUIVerb', ExpandConstant('{cm:ConvertWithFCP}'));
-  RegWriteStringValue(HKCU, SubKey, 'Icon', ExpandConstant('{app}\icon_DEV.ico,0'));
+  RegWriteStringValue(HKCU, SubKey, 'Icon', ExpandConstant('{app}\icon.ico,0'));
   RegWriteStringValue(HKCU, SubKey, 'SubCommands', '');
 
   if Ext = 'aac' then begin
@@ -947,13 +987,23 @@ begin
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
 begin
   Result := '';
+
+#if IsDev == 0
+  Exec('taskkill.exe', '/f /im "FCP.exe"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  Sleep(500);
+#endif
 
   if DirExists(ExpandConstant('{app}')) then
   begin
     PreserveLegacyDatabases();
     CleanInstallDir();
+#if IsDev == 0
+    CleanOldRegistry();
+#endif
   end;
 end;
 
@@ -987,6 +1037,13 @@ begin
       WizardForm.TasksList.Checked[I] := True;
 end;
 
+#if IsDev == 0
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usPostUninstall then
+    CleanOldRegistry();
+end;
+#endif
 
 procedure CurStepChanged(CurStep: TSetupStep);
 var
@@ -994,7 +1051,12 @@ var
   AppPath: String;
 begin
   if CurStep = ssPostInstall then begin
+#if IsDev == 0
+    ForceDirectories(ExpandConstant('{localappdata}\{#MyAppName}'));
 
+    if WizardIsTaskSelected('contextmenu') then
+      RegisterAllContextMenus();
+#endif
 
     WriteLanguageConfig();
 

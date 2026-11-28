@@ -31,6 +31,7 @@ from rich.table import Table
 from rich.text import Text
 from rich.theme import Theme
 
+from app_channel import ICON_ICO, SOCKET_NAME
 from utils import SRC_DIR
 
 # Redirection or a legacy console may not encode the banner and status icons.
@@ -154,8 +155,6 @@ from PySide6.QtWidgets import QApplication, QDialog  # noqa: E402
 from app import FadingMainWindow  # noqa: E402
 from config import ConfigManager, is_dark_mode_qt  # noqa: E402
 from dialogs import ModernSplashScreen, TermsAndPrivacyDialog  # noqa: E402
-
-SOCKET_NAME = "FileConverterProDev_SingleInstance"
 
 SPLASH_DELAY = 3000
 FADEIN_DELAY = 100
@@ -524,10 +523,10 @@ class AppBootstrap:
     """Creates the QApplication and loads initial configuration."""
 
     _ICON_CANDIDATES = [
-        lambda: os.path.join(str(SRC_DIR), "Assets", "icon_DEV.ico"),
-        lambda: "icon_DEV.ico",
-        lambda: os.path.join(os.getcwd(), "icon_DEV.ico"),
-        lambda: os.path.join(getattr(sys, "_MEIPASS", ""), "icon_DEV.ico"),
+        lambda: os.path.join(str(SRC_DIR), "Assets", ICON_ICO),
+        lambda: ICON_ICO,
+        lambda: os.path.join(os.getcwd(), ICON_ICO),
+        lambda: os.path.join(getattr(sys, "_MEIPASS", ""), ICON_ICO),
     ]
 
     def __init__(self, forced_language: str | None = None, forced_theme: str | None = None) -> None:
@@ -554,7 +553,7 @@ class AppBootstrap:
             app.setWindowIcon(icon)
             QApplication.setWindowIcon(icon)
         else:
-            _fcp_warn("icon_DEV.ico not found — using system default.")
+            _fcp_warn(f"{ICON_ICO} not found - using system default.")
 
         return app
 
@@ -585,7 +584,7 @@ class AppBootstrap:
     def _resolve_icon(cls) -> str | None:
         from utils import get_icon_path
 
-        path = get_icon_path("icon_DEV.ico")
+        path = get_icon_path()
         return path if path and os.path.exists(path) else None
 
 

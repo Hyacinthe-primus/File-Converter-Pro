@@ -29,6 +29,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app_channel import DONOR_FOLDER_NAME
+
 KOFI_LINK = "https://ko-fi.com/hyacinthe_primus/goal?g=0"
 
 
@@ -41,7 +43,7 @@ def _donor_flag_path(config_dir: str | None = None) -> Path:
     import sys
 
     if hasattr(sys, "_MEIPASS"):
-        return Path(os.environ.get("APPDATA", Path.home())) / "FileConverterProDev" / "donor_pending.json"
+        return Path(os.environ.get("APPDATA", Path.home())) / DONOR_FOLDER_NAME / "donor_pending.json"
     from utils import SRC_DIR
     return SRC_DIR / "donor_pending.json"
 

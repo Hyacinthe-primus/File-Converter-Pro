@@ -1,5 +1,10 @@
 # Build Script for File Converter Pro (onedir + UPX)
 
+param(
+    [ValidateSet("stable", "dev")]
+    [string]$Channel = "stable"
+)
+
 # Optional explicit fallback if UPX is not available on PATH.
 $UPX_FALLBACK_PATH = ""
 
@@ -63,6 +68,10 @@ if (-not (Test-Path "build.spec")) {
     exit 1
 }
 Write-Success "Spec file found"
+
+$Channel = $Channel.ToLowerInvariant()
+$env:FCP_CHANNEL = $Channel
+Write-Info "Build channel: $Channel"
 
 
 Write-Info "Configuring UPX for PyInstaller..."

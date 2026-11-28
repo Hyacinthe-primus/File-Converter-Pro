@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from app_channel import ICON_ICO, STAGING_PREFIX
 from context_menu.conversion_helpers import (
     _PDF_TO_WORD_MODE_DEFAULT,
     _PDF_TO_WORD_MODES,  # noqa: F401
@@ -86,7 +87,7 @@ def _collect_staged_files(conversion_type: str, single_file: str) -> list[str]:
     Windows spawns one process per selected file for context menu commands.
     """
     epoch = int(time.time() / _COLLECT_EPOCH_SEC)
-    key = f"fcpdev_{conversion_type}_{epoch}"
+    key = f"{STAGING_PREFIX}{conversion_type}_{epoch}"
     staging = os.path.join(tempfile.gettempdir(), f"{key}.txt")
     lock = os.path.join(tempfile.gettempdir(), f"{key}.lock")
 
@@ -318,7 +319,7 @@ class QuickConvertWindow(QWidget):
     def _set_icon(self):
         from utils import get_icon_path
 
-        icon_path = get_icon_path("icon_DEV.ico")
+        icon_path = get_icon_path(ICON_ICO)
         if icon_path and os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
 

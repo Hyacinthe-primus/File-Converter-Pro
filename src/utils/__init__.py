@@ -3,7 +3,7 @@ Shared utility functions for File Converter Pro.
 
 Provides centralized implementations for:
     - resource_path()  : resolve paths for dev mode and PyInstaller
-    - get_icon_path()  : locate icon_DEV.ico robustly
+    - get_icon_path()  : locate the channel icon robustly
     - make_tm()        : create a TranslationManager for a given language
 """
 
@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 import os
 import sys
+
+from app_channel import ICON_ICO
 
 # Single source of truth for resource resolution.
 # src/utils/__init__.py -> src/ (one level up)
@@ -34,8 +36,10 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(base, relative_path)
 
 
-def get_icon_path(icon_name: str = "icon_DEV.ico") -> str:
+def get_icon_path(icon_name: str | None = None) -> str:
     """Locate an icon file robustly (dev + PyInstaller).
+
+    Defaults to the icon for the current build channel.
 
     Search order:
         1. PyInstaller extraction dir (sys._MEIPASS)
@@ -43,6 +47,9 @@ def get_icon_path(icon_name: str = "icon_DEV.ico") -> str:
         3. Current working directory
         4. Fallback: return icon_name as-is
     """
+    if icon_name is None:
+        icon_name = ICON_ICO
+
     if getattr(sys, "frozen", False):
         path = os.path.join(sys._MEIPASS, icon_name)
         if os.path.exists(path):

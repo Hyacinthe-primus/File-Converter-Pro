@@ -30,9 +30,12 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Publisher,
 
-    [string]$PackageName = "PrimeEnterprisesHyacinthe.FileConverterProDev",
-    [string]$DisplayName = "File Converter Pro (Dev)",
-    [string]$Description = "Development build of File Converter Pro.",
+    [ValidateSet("stable", "dev")]
+    [string]$Channel = "stable",
+
+    [string]$PackageName = "",
+    [string]$DisplayName = "",
+    [string]$Description = "",
     [string]$PublisherDisplayName = "Prime Enterprises",
     [string]$Version = "",
     [ValidateSet("x64", "arm64", "x86")]
@@ -49,6 +52,19 @@ function Write-Ok($message) { Write-Host "    $message" -ForegroundColor Green }
 
 $PackagingDir = $PSScriptRoot
 $RepoRoot = Split-Path -Parent $PackagingDir
+
+$isDev = $Channel -eq "dev"
+if (-not $PackageName) {
+    $PackageName = if ($isDev) { "PrimeEnterprisesHyacinthe.FileConverterProDev" } else { "PrimeEnterprises.FileConverterPro" }
+}
+if (-not $DisplayName) {
+    $DisplayName = if ($isDev) { "File Converter Pro (Dev)" } else { "File Converter Pro" }
+}
+if (-not $Description) {
+    $Description = if ($isDev) { "Development build of File Converter Pro." } else { "Convert documents, images, audio, video, archives and more." }
+}
+$iconFile = if ($isDev) { "icon_DEV.ico" } else { "icon.ico" }
+$packagePrefix = if ($isDev) { "FileConverterPro_Dev" } else { "FileConverterPro" }
 
 if (-not $SourceDir) { $SourceDir = Join-Path $PackagingDir "dist\FCP" }
 if (-not $OutputDir) { $OutputDir = Join-Path $PackagingDir "dist\msix" }
@@ -118,7 +134,7 @@ if ($Publisher -notmatch '^CN=') {
 if ($PackageName -notmatch '^[A-Za-z0-9.-]{3,50}$' -or $PackageName.EndsWith(".")) {
     throw "PackageName '$PackageName' is not a valid MSIX identity name."
 }
-if ($PackageName -eq "PrimeEnterprisesHyacinthe.FileConverterProPrimeEnt") {
+if ($isDev -and $PackageName -eq "PrimeEnterprisesHyacinthe.FileConverterProPrimeEnt") {
     throw "That is the Microsoft Store identity. Use the dev identity so the Store app stays installed."
 }
 if (-not (Test-Path -LiteralPath (Join-Path $SourceDir "FCP.exe"))) {
@@ -194,7 +210,7 @@ if ($invalid) {
 
 Write-Step "Rendering store logos"
 $assetsDir = Join-Path $StageDir "Assets"
-& python (Join-Path $PackagingDir "msix\make_assets.py") (Join-Path $RepoRoot "src\Assets\icon_DEV.ico") $assetsDir
+& python (Join-Path $PackagingDir "msix\make_assets.py") (Join-Path $RepoRoot "src\Assets\$iconFile") $assetsDir
 if ($LASTEXITCODE -ne 0) { throw "Asset generation failed." }
 
 Write-Step "Writing AppxManifest.xml"
@@ -218,7 +234,7 @@ Set-Content -LiteralPath (Join-Path $StageDir "AppxManifest.xml") -Value $manife
 
 # --- Pack ------------------------------------------------------------------
 
-$packagePath = Join-Path $OutputDir ("FileConverterPro_Dev_{0}_{1}.msix" -f $ResolvedVersion, $Architecture)
+$packagePath = Join-Path $OutputDir ("{0}_{1}_{2}.msix" -f $packagePrefix, $ResolvedVersion, $Architecture)
 if (Test-Path -LiteralPath $packagePath) { Remove-Item -LiteralPath $packagePath -Force }
 
 Write-Step "Packing MSIX"

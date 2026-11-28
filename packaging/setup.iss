@@ -8,16 +8,34 @@
 #define MyAppPublisher "Prime Enterprises"
 #define MyAppURL "https://github.com/Hyacinthe-primus/File-Converter-Pro"
 #define MyAppExeName "FCP.exe"
-#define MyAppId "{{C1E31023-8141-4243-96B2-D3AAC59CAC6F}}"
 #define MyDistDir "dist\FCP"
+
+; Build channel: pass /DDEV=1 to ISCC for the development channel.
+#ifdef DEV
+  #define IsDev 1
+  #define MyAppVersionLabel MyAppVersion + "-dev"
+  #define MyAppShortcutName MyAppName + " (Dev)"
+  #define MyAppId "{{172548E0-545D-42D0-9912-65FDF79B4546}}"
+  #define MyDefaultDirName "{autopf}\FCP Dev"
+  #define MyOutputBaseFilename "FileConverterPro_Dev_Setup_v" + MyAppVersionLabel
+  #define MyIconFile "icon_DEV.ico"
+#else
+  #define IsDev 0
+  #define MyAppVersionLabel MyAppVersion
+  #define MyAppShortcutName MyAppName
+  #define MyAppId "{{C1E31023-8141-4243-96B2-D3AAC59CAC6F}}"
+  #define MyDefaultDirName "{autopf}\FCP"
+  #define MyOutputBaseFilename "FileConverterPro_Setup_v" + MyAppVersion
+  #define MyIconFile "icon.ico"
+#endif
 
 [Setup]
 AppId={#MyAppId}
 AppName={#MyAppName}
-AppVersion={#MyAppVersion}
+AppVersion={#MyAppVersionLabel}
 VersionInfoVersion={#MyAppVersion}
 VersionInfoCompany={#MyAppPublisher}
-VersionInfoDescription={#MyAppName} Setup
+VersionInfoDescription={#MyAppShortcutName} Setup
 VersionInfoCopyright=© 2026 {#MyAppPublisher}. All rights reserved.
 VersionInfoProductName={#MyAppName}
 VersionInfoProductVersion={#MyAppVersion}
@@ -25,12 +43,13 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={autopf}\FCP
-DefaultGroupName={#MyAppName}
+DefaultDirName={#MyDefaultDirName}
+DefaultGroupName={#MyAppShortcutName}
 OutputDir=..\Output
-OutputBaseFilename=FileConverterPro_Setup_v{#MyAppVersion}
-SetupIconFile=..\src\Assets\icon.ico
-UninstallDisplayIcon={app}\icon.ico
+OutputBaseFilename={#MyOutputBaseFilename}
+SetupIconFile=..\src\Assets\{#MyIconFile}
+UninstallDisplayIcon={app}\{#MyIconFile}
+UninstallDisplayName={#MyAppShortcutName}
 WizardStyle=modern
 WizardSmallImageFile=installer_banner.png
 Compression=lzma2/ultra64
@@ -137,12 +156,14 @@ turkish.Requires64Bit=Bu uygulama Windows 64-bit gerektirir.
 
 [Tasks]
 Name: "desktopicon";   Description: "{cm:CreateDesktopIcon}";    GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+#if IsDev == 0
 Name: "assocfileext";  Description: "{cm:AssocFileType}";         GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
 Name: "contextmenu";   Description: "{cm:AddContextMenu}";        GroupDescription: "{cm:AdditionalIcons}"; Flags: checkedonce
+#endif
 
 [Files]
 ; Uninstallation icon
-Source: "..\src\Assets\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\src\Assets\{#MyIconFile}"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "{#MyDistDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#MyDistDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "{#MyAppExeName}"
@@ -152,10 +173,11 @@ Source: "..\src\LICENSE\LICENSE.txt";    DestDir: "{app}"; Flags: ignoreversion;
 Source: "..\src\LICENSE\LICENSE_FR.txt"; DestDir: "{app}"; Flags: ignoreversion; Check: IsFrench()
 
 [Icons]
-Name: "{group}\{#MyAppName}";                          Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Comment: "{cm:AppDescription}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}";    Filename: "{uninstallexe}";        IconFilename: "{app}\icon.ico"
-Name: "{autodesktop}\{#MyAppName}";                    Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Comment: "{cm:AppDescription}"; Tasks: desktopicon
+Name: "{group}\{#MyAppShortcutName}";                          Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyIconFile}"; Comment: "{cm:AppDescription}"
+Name: "{group}\{cm:UninstallProgram,{#MyAppShortcutName}}";    Filename: "{uninstallexe}";        IconFilename: "{app}\{#MyIconFile}"
+Name: "{autodesktop}\{#MyAppShortcutName}";                    Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyIconFile}"; Comment: "{cm:AppDescription}"; Tasks: desktopicon
 
+#if IsDev == 0
 [Registry]
 ; Association extension .fcproj
 Root: HKCU; Subkey: "Software\Classes\.fcproj";                                          ValueType: string; ValueName: ""; ValueData: "FileConverterPro.Project";     Flags: uninsdeletevalue;  Tasks: assocfileext
@@ -164,15 +186,22 @@ Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\DefaultIcon";    
 Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\shell\open\command";      ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""; Tasks: assocfileext
 Root: HKCU; Subkey: "Software\Classes\FileConverterPro.Project\shell\open";              ValueType: string; ValueName: "WorkingDirectory"; ValueData: "{app}";        Tasks: assocfileext
 
-[Run]
-Filename: "{app}\{#MyAppExeName}"; Parameters: "--lang {code:GetLangCode}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+#endif
 
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Parameters: "--lang {code:GetLangCode}"; Description: "{cm:LaunchProgram,{#MyAppShortcutName}}"; Flags: nowait postinstall skipifsilent
+
+#if IsDev == 0
 [Dirs]
 Name: "{localappdata}\{#MyAppName}"
 
+#endif
+
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"
+#if IsDev == 0
 Type: filesandordirs; Name: "{localappdata}\{#MyAppName}"
+#endif
 
 [Code]
 var
@@ -962,14 +991,19 @@ var
   ResultCode: Integer;
 begin
   Result := '';
+
+#if IsDev == 0
   Exec('taskkill.exe', '/f /im "FCP.exe"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Sleep(500);
+#endif
 
   if DirExists(ExpandConstant('{app}')) then
   begin
     PreserveLegacyDatabases();
     CleanInstallDir();
+#if IsDev == 0
     CleanOldRegistry();
+#endif
   end;
 end;
 
@@ -1003,11 +1037,13 @@ begin
       WizardForm.TasksList.Checked[I] := True;
 end;
 
+#if IsDev == 0
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usPostUninstall then
     CleanOldRegistry();
 end;
+#endif
 
 procedure CurStepChanged(CurStep: TSetupStep);
 var
@@ -1015,10 +1051,12 @@ var
   AppPath: String;
 begin
   if CurStep = ssPostInstall then begin
+#if IsDev == 0
     ForceDirectories(ExpandConstant('{localappdata}\{#MyAppName}'));
 
     if WizardIsTaskSelected('contextmenu') then
       RegisterAllContextMenus();
+#endif
 
     WriteLanguageConfig();
 

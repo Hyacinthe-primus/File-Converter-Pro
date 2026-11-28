@@ -23,6 +23,8 @@ import webbrowser
 import xml.etree.ElementTree as ET
 from importlib.util import find_spec
 
+from app_channel import ICON_PNG, TOAST_APP_ID
+
 IS_WINDOWS = platform.system() == "Windows"
 WINOTIFY_AVAILABLE = IS_WINDOWS and find_spec("winotify") is not None
 
@@ -167,7 +169,7 @@ class QtNotifier:
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray = QSystemTrayIcon()
             from utils import resource_path
-            self.tray.setIcon(QIcon(resource_path(os.path.join("Assets", "icon.png"))))
+            self.tray.setIcon(QIcon(resource_path(os.path.join("Assets", ICON_PNG))))
             self.tray.show()
         else:
             print("[NOTIFIER] No system tray available — desktop notifications disabled")
@@ -243,9 +245,9 @@ class SystemNotifier:
         self._tm = None
         self._fallback_tm = None
         self.app_name = "File Converter Pro"
-        self.app_id = "FileConverterPro.SystemNotifier"
+        self.app_id = TOAST_APP_ID
 
-        self.icon_path = self._get_resource_path(os.path.join("Assets", "icon.png"))
+        self.icon_path = self._get_resource_path(os.path.join("Assets", ICON_PNG))
         self.sound_path = self._get_resource_path(os.path.join("Assets", "SFX", "notif.mp3"))
         self.toast_icon_path = self.icon_path if os.path.exists(self.icon_path) else ""
 

@@ -3,7 +3,8 @@ Writable application-data locations.
 
 Resolution order for get_data_dir():
 1. FCP_DATA_DIR environment variable (portable installs and tests)
-2. frozen: %LOCALAPPDATA%\\FileConverterPro
+2. frozen: %LOCALAPPDATA%\\FileConverterPro (stable) or
+   %LOCALAPPDATA%\\FileConverterProDev (dev)
    (POSIX: $XDG_DATA_HOME/FileConverterPro or ~/.local/share/...)
 3. development: the src/ folder
 """
@@ -15,9 +16,9 @@ import shutil
 import sys
 from pathlib import Path
 
+from app_channel import APP_FOLDER_NAME
 from utils import SRC_DIR
 
-APP_FOLDER_NAME = "FileConverterPro"
 DATA_DIR_ENV = "FCP_DATA_DIR"
 
 # SQLite sidecar files travel with their database so WAL contents are not lost.

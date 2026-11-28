@@ -4,6 +4,14 @@
 block_cipher = None
 import os, sys, shutil, glob
 
+CHANNEL = os.environ.get("FCP_CHANNEL", "stable").strip().lower()
+IS_DEV = CHANNEL == "dev"
+
+# Keep the bundled runtime channel in sync with the executable identity.
+channel_module = os.path.join('..', 'src', '_build_channel.py')
+with open(channel_module, 'w', encoding='utf-8') as _channel_file:
+    _channel_file.write(f'CHANNEL = "{CHANNEL}"\n')
+
 shutil.rmtree(os.path.join('dist', 'FCP'), ignore_errors=True)
 
 def collect_data_files():
@@ -338,11 +346,11 @@ exe = EXE(
     upx=True,
     upx_exclude=UPX_EXCLUDE,
     runtime_tmpdir=None,
-    console=False,
+    console=IS_DEV,
     disable_windowed_traceback=False,
     argv_emulation=False,
-    icon='../src/Assets/icon.ico',
-    version='version_info.txt',
+    icon='../src/Assets/icon_DEV.ico' if IS_DEV else '../src/Assets/icon.ico',
+    version='version_info_dev.txt' if IS_DEV else 'version_info.txt',
     manifest='manifest.xml',
 )
 

@@ -3,7 +3,9 @@
 param(
     [string]$IssFile   = "",
     [string]$OutputDir = "Output",
-    [string]$DistDir   = "packaging\dist\FCP"
+    [string]$DistDir   = "packaging\dist\FCP",
+    [ValidateSet("stable", "dev")]
+    [string]$Channel   = "stable"
 )
 
 # This script lives in packaging/. Resolve project root from script location.
@@ -98,17 +100,22 @@ function Invoke-WithSpinner {
         [string]$Message,
         [string]$IsccPath,
         [string]$IssFile,
-        [string]$OutputDir
+        [string]$OutputDir,
+        [string]$Channel
     )
 
     $frames   = @("⠋","⠙","⠹","⠸","⠼","⠴","⠦","⠧","⠇","⠏")
     $exitFile = [System.IO.Path]::GetTempFileName()
 
     $job = Start-Job -ScriptBlock {
-        param($iscc, $iss, $outDir, $exitFile)
+        param($iscc, $iss, $outDir, $exitFile, $channel)
         try {
+            $isccArgs = @("`"$iss`"")
+            if ($channel -eq "dev") {
+                $isccArgs += "/DDEV=1"
+            }
             $p = Start-Process -FilePath $iscc `
-                -ArgumentList "`"$iss`"" `
+                -ArgumentList $isccArgs `
                 -Wait -NoNewWindow -PassThru `
                 -RedirectStandardOutput "$outDir\iscc_output.log" `
                 -RedirectStandardError  "$outDir\iscc_error.log"
@@ -116,7 +123,7 @@ function Invoke-WithSpinner {
         } catch {
             Set-Content -Path $exitFile -Value "99"
         }
-    } -ArgumentList $IsccPath, $IssFile, $OutputDir, $exitFile
+    } -ArgumentList $IsccPath, $IssFile, $OutputDir, $exitFile, $Channel
 
     $i = 0
     Write-Host ""
@@ -285,7 +292,7 @@ $appVersion     = if ($issContent -match '#define MyAppVersion "([^"]+)"')      
 $appPublisher   = if ($issContent -match '#define MyAppPublisher "([^"]+)"')           { $matches[1] } else { "N/A" }
 $compression    = if ($issContent -match 'Compression=([^\r\n]+)')                     { $matches[1] } else { "N/A" }
 $solidComp      = if ($issContent -match 'SolidCompression=([^\r\n]+)')                { $matches[1] } else { "N/A" }
-$outputBaseFile = if ($issContent -match 'OutputBaseFilename=([^\r\n]+)')              { $matches[1] } else { "N/A" }
+$outputBaseFile = if ($Channel -eq "dev") { "FileConverterPro_Dev_Setup_v$appVersion-dev" } else { "FileConverterPro_Setup_v$appVersion" }
 $minVersion     = if ($issContent -match 'MinVersion=([^\r\n]+)')                      { $matches[1] } else { "N/A" }
 $archMode       = if ($issContent -match 'ArchitecturesInstallIn64BitMode=([^\r\n]+)') { $matches[1] } else { "N/A" }
 
@@ -360,7 +367,8 @@ $exitCode = Invoke-WithSpinner `
     -Message   "Compiling installer with Inno Setup" `
     -IsccPath  $IsccPath `
     -IssFile   $IssFile `
-    -OutputDir $OutputDir
+    -OutputDir $OutputDir `
+    -Channel   $Channel
 
 $CompileEnd      = Get-Date
 $CompileDuration = ($CompileEnd - $CompileStart).TotalSeconds

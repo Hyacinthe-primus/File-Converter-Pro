@@ -1,7 +1,10 @@
 # Run build steps, stop on failure.
 
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseApprovedVerbs', '')]
-param()
+param(
+    [ValidateSet("stable", "dev")]
+    [string]$Channel = "stable"
+)
 
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
 
@@ -29,7 +32,8 @@ function Write-Banner {
 function Run-Step {
     param(
         [string]$Label,
-        [string]$Script
+        [string]$Script,
+        [string[]]$Arguments = @()
     )
     $path = Join-Path $ScriptDir $Script
     Write-Banner $Label
@@ -39,7 +43,12 @@ function Run-Step {
         exit 1
     }
 
-    & $path
+    Push-Location $ScriptDir
+    try {
+        & $path @Arguments
+    } finally {
+        Pop-Location
+    }
     if ($LASTEXITCODE -ne 0) {
         Write-Host ""
         Write-Host "  [FAILED] $Script returned exit code $LASTEXITCODE" -ForegroundColor Red
@@ -76,8 +85,8 @@ function Resolve-SevenZipPath {
 
 $Start = Get-Date
 
-Run-Step "1/3  Main Build" "build.ps1"
-Run-Step "2/3  Installer" "build_installer.ps1"
+Run-Step "1/3  Main Build" "build.ps1" -Arguments @("-Channel", $Channel)
+Run-Step "2/3  Installer" "build_installer.ps1" -Arguments @("-Channel", $Channel)
 
 Write-Banner "3/3  Portable ZIP and checksums"
 
@@ -93,9 +102,11 @@ if ($issContent -notmatch '#define MyAppVersion "([^"]+)"') {
     exit 1
 }
 $AppVersion = $matches[1]
+$LabelSuffix = if ($Channel -eq "dev") { "_Dev" } else { "" }
+$AppVersionLabel = if ($Channel -eq "dev") { "$AppVersion-dev" } else { $AppVersion }
 
-$InstallerPath = Join-Path $OutputDir "FileConverterPro_Setup_v$AppVersion.exe"
-$ZipPath = Join-Path $OutputDir "File_Converter_Pro_v$AppVersion.zip"
+$InstallerPath = Join-Path $OutputDir "FileConverterPro${LabelSuffix}_Setup_v$AppVersionLabel.exe"
+$ZipPath = Join-Path $OutputDir "File_Converter_Pro${LabelSuffix}_v$AppVersionLabel.zip"
 $ChecksumsPath = Join-Path $OutputDir "checksums.txt"
 
 if (-not (Test-Path -LiteralPath $InstallerPath -PathType Leaf)) {

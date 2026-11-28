@@ -8,6 +8,7 @@ import logging
 import sys
 import time
 
+from app_channel import DAEMON_RUN_VALUE
 from app_paths import ensure_data_dir, is_packaged
 
 LOG_MAX_LINES = 200
@@ -65,10 +66,10 @@ def set_autostart(enabled: bool, exe_path: str | None = None) -> None:
                 path = f'"{sys.executable}" --daemon'
             else:
                 path = f'"{sys.executable}" --daemon'
-            winreg.SetValueEx(key, "FileConverterProDaemon", 0, winreg.REG_SZ, path)
+            winreg.SetValueEx(key, DAEMON_RUN_VALUE, 0, winreg.REG_SZ, path)
         else:
             try:
-                winreg.DeleteValue(key, "FileConverterProDaemon")
+                winreg.DeleteValue(key, DAEMON_RUN_VALUE)
             except FileNotFoundError:
                 pass
         winreg.CloseKey(key)
@@ -85,7 +86,7 @@ def is_autostart_enabled() -> bool:
         import winreg
 
         key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run")
-        winreg.QueryValueEx(key, "FileConverterProDaemon")
+        winreg.QueryValueEx(key, DAEMON_RUN_VALUE)
         winreg.CloseKey(key)
         return True
     except Exception:
